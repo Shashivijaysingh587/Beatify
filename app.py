@@ -11,6 +11,9 @@ Author: Pallav Kumar
 =========================================================
 """
 from flask import send_from_directory
+from database.db import init_db
+from database.db import db
+from models.user import User
 import os
 from routes.song_routes import get_all_albums
 from routes.song_routes import song_bp
@@ -30,6 +33,27 @@ app.register_blueprint(song_bp)
 
 app.config["SECRET_KEY"] = SECRET_KEY
 
+# =========================================================
+# Database Configuration
+# =========================================================
+
+from config import (
+    SQLALCHEMY_DATABASE_URI,
+    SQLALCHEMY_TRACK_MODIFICATIONS
+)
+
+app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = SQLALCHEMY_TRACK_MODIFICATIONS
+
+# Initialize Database
+init_db(app)
+
+# =========================================================
+# Create Database Tables
+# =========================================================
+
+with app.app_context():
+    db.create_all()
 # =========================================================
 # Home Route
 # =========================================================

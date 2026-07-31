@@ -1,43 +1,31 @@
 """
-==========================================
+=========================================================
 Beatify Music Streaming Platform
 
-File : database/db.py
+File: database/db.py
 
 Purpose:
-Handles MySQL Database Connection.
+Initialize SQLAlchemy database instance.
 
-Author : Pallav Kumar
-==========================================
+Author: Pallav Kumar
+=========================================================
 """
 
-import mysql.connector
-from mysql.connector import Error
+from flask_sqlalchemy import SQLAlchemy
 
-from config import MYSQL_CONFIG
+# =========================================================
+# SQLAlchemy Database Object
+# =========================================================
+
+db = SQLAlchemy()
 
 
-def get_db_connection():
+# =========================================================
+# Initialize Database
+# =========================================================
+
+def init_db(app):
     """
-    Create and return MySQL connection.
+    Initialize SQLAlchemy with Flask app.
     """
-
-    try:
-
-        connection = mysql.connector.connect(
-            **MYSQL_CONFIG
-        )
-
-        if connection.is_connected():
-
-            print("✅ MySQL Connected Successfully")
-
-            return connection
-
-    except Error as error:
-
-        print("❌ MySQL Connection Failed")
-
-        print(error)
-
-        return None
+    db.init_app(app)

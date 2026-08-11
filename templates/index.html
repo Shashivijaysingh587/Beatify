@@ -4,9 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spotify - Web Player: Music for everyone</title>
+    <title>Beatify - Web Player: Feel every beat</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/utility.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='brand/favicon.ico') }} ">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 </head>
 
 <body>
@@ -14,8 +16,8 @@
         <header>
 
             <div class="logo">
-                <img src="{{ url_for('static', filename='svg/logo.svg') }}" alt="logo" class="invert1" id="logoimg"
-                    title="Spotify">
+                <img src="{{ url_for('static', filename='brand/Beatifycmple.png') }}" alt="logo" id="logoimg"
+                    title="Beatify">
 
             </div>
 
@@ -58,136 +60,1004 @@
                 </div>
             </div>
         </header>
+
         <main>
             <div class="library">
+
                 <div class="library-header">
+
                     <div class="library-icon">
+
                         <img src="{{ url_for('static', filename='svg/library.svg') }}" alt="" class="invert">
+
                         <span>Your library</span>
+
                     </div>
+
                     <div class="library-btn">
-                        <button>create</button>
+
+
+
                         <img src="{{ url_for('static', filename='svg/close.svg') }}" alt="" class="invert1 closelib">
+
                     </div>
+
                 </div>
+
                 <div class="songList">
+
                     <ul>
 
                     </ul>
+
                 </div>
+
+                <!-- =========================================
+                        Sidebar User Card
+                ========================================== -->
+
+                <div class="sidebar-user-card" id="sidebar-user-card">
+
+                    <div class="sidebar-user-left">
+
+                        <div class="sidebar-profile-image" id="sidebar-profile-image" title="Change profile photo">
+
+                            <img id="sidebar-profile-photo" src="" alt="User Profile Photo">
+
+                            <span id="sidebar-profile-letter">
+
+                                P
+
+                            </span>
+
+                        </div>
+
+                        <div class="sidebar-user-info">
+
+                            <h4 id="sidebar-fullname">
+                                Guest User
+                            </h4>
+
+                            <p>
+                                Free Plan
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <div class="sidebar-user-menu">
+
+                        <button id="sidebar-menu-btn" class="sidebar-menu-btn">
+
+                            ⋮
+
+                        </button>
+
+
+
+                    </div>
+
+                </div>
+
+                <input type="file" id="profile-image-input" accept=".jpg,.jpeg,.png,.webp" hidden>
+
+                <div class="sidebar-dropdown" id="sidebar-dropdown">
+
+                    <button id="update-profile-btn">
+
+                        Update Profile
+
+                    </button>
+
+                    <button id="logout-btn">
+
+                        Logout
+
+                    </button>
+
+                </div>
+
             </div>
             <div class="content">
                 <div class="content-header">
+
                     <div class="content-logo">
-                        <img src="{{ url_for('static', filename='svg/humburger.svg') }}" alt=""
-                            class="invert1 hamburger">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" color="currentColor" fill="none"
-                            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-                            class="invert1">
-                            <path d="M15 6C15 6 9.00001 10.4189 9 12C8.99999 13.5812 15 18 15 18"></path>
-                        </svg>
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" color="currentColor" fill="none"
-                            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-                            class="invert1">
-                            <path d="M9.00005 6C9.00005 6 15 10.4189 15 12C15 13.5812 9 18 9 18"></path>
-                        </svg>
+
+                        <img src="{{ url_for('static', filename='svg/humburger.svg') }}" class="invert1 hamburger">
+
                     </div>
+
+                    <div class="collection-navigation">
+
+                        <div class="collection-arrow-buttons">
+
+                            <button id="left-view-btn" class="collection-arrow-btn">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
+
+                            <button id="right-view-btn" class="collection-arrow-btn">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+
+                        </div>
+
+                        <!-- 👇 YAHI ADD KARNA HAI -->
+
+                        <button id="mobile-collection-menu" class="mobile-collection-menu">
+
+                            <i class="fa-solid fa-grip"></i>
+
+                        </button>
+
+                        <!-- 👆 YAHI TAK -->
+
+                        <div class="collection-tabs">
+
+                            <button id="view-all-btn" class="collection-tab active">
+                                <span class="tab-indicator"></span>
+                                View All
+                            </button>
+
+                            <button id="your-collections-btn" class="collection-tab">
+                                <span class="tab-indicator"></span>
+                                Your Collections
+                            </button>
+
+                        </div>
+
+                        <div class="collection-right">
+
+
+
+                        </div>
+
+                    </div>
+
                     <div class="loginSignup">
-                        <button class="loginbtn">Login</button>
-                        <button class="signupbtn">Signup</button>
+
+                        <button class="loginbtn">
+                            Login
+                        </button>
+
+                        <button class="signupbtn">
+                            Signup
+                        </button>
+
+                        <div class="user-greeting" id="user-greeting">
+
+                            Hi,
+                            <span id="user-firstname"></span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ===================================================== -->
+                <!-- Signup Modal -->
+                <!-- ===================================================== -->
+
+                <div class="signup-modal " id="signup-modal">
+
+                    <div class="signup-overlay">
+
+                        <div class="signup-modal-content">
+
+                            <!-- Close Button -->
+                            <button class="signup-close-btn" id="signup-close-btn">
+                                &times;
+                            </button>
+
+                            <!-- Brand -->
+                            <div class="signup-brand">
+
+                                <img src="{{ url_for('static', filename='brand/beatifycmple.png') }}" alt="Beatify Logo"
+                                    class="signup-logo">
+                                <!-- 
+                            <h2 class="signup-brand-name">
+                                Beatify
+                            </h2> -->
+
+                            </div>
+
+                            <!-- Title -->
+
+                            <h1 class="signup-title">
+                                Create your Beatify account
+                            </h1>
+
+                            <p class="signup-subtitle">
+                                Start listening to millions of songs for free.
+                            </p>
+
+                            <!-- Signup Form -->
+
+                            <form id="signup-form" class="signup-form" novalidate>
+
+                                <!-- Full Name -->
+
+                                <div class="signup-form-group">
+
+                                    <label for="signup-fullname">
+                                        Full Name
+                                    </label>
+
+                                    <input type="text" id="signup-fullname" class="signup-input"
+                                        placeholder="Enter your full name" required>
+
+                                    <small class="signup-error" id="fullname-error"></small>
+
+                                </div>
+
+                                <!-- Username -->
+
+                                <div class="signup-form-group">
+
+                                    <label for="signup-username">
+                                        Username
+                                    </label>
+
+                                    <input type="text" id="signup-username" class="signup-input"
+                                        placeholder="Choose a username" required>
+
+                                    <small class="signup-error" id="username-error"></small>
+
+                                </div>
+
+                                <!-- Email -->
+
+                                <div class="signup-form-group">
+
+                                    <label for="signup-email">
+                                        Email Address
+                                    </label>
+
+                                    <input type="email" id="signup-email" class="signup-input"
+                                        placeholder="Enter your email" required>
+
+                                    <small class="signup-error" id="email-error"></small>
+
+                                </div>
+
+                                <!-- Password -->
+
+                                <div class="signup-form-group">
+
+                                    <label for="signup-password">
+                                        Password
+                                    </label>
+
+                                    <div class="signup-password-wrapper">
+
+                                        <input type="password" id="signup-password" class="signup-input"
+                                            placeholder="Create a password" required>
+
+                                        <button type="button" class="toggle-password" id="toggle-signup-password">
+
+                                            <i class="fa-regular fa-eye"></i>
+
+                                        </button>
+
+                                    </div>
+
+                                    <small class="signup-error" id="password-error"></small>
+                                    <div class="password-strength">
+
+                                        <div class="password-strength-bar" id="password-strength-bar">
+                                        </div>
+
+                                    </div>
+
+                                    <p class="password-strength-text" id="password-strength-text">
+
+                                        Password strength
+
+                                    </p>
+
+                                    <ul class="password-rules">
+
+                                        <li id="rule-length">
+                                            Minimum 8 characters
+                                        </li>
+
+                                        <li id="rule-uppercase">
+                                            One uppercase letter
+                                        </li>
+
+                                        <li id="rule-lowercase">
+                                            One lowercase letter
+                                        </li>
+
+                                        <li id="rule-number">
+                                            One number
+                                        </li>
+
+                                        <li id="rule-special">
+                                            One special character
+                                        </li>
+
+                                    </ul>
+
+                                </div>
+
+                                <!-- Confirm Password -->
+
+                                <div class="signup-form-group">
+
+                                    <label for="signup-confirm-password">
+                                        Confirm Password
+                                    </label>
+
+                                    <div class="signup-password-wrapper">
+
+                                        <input type="password" id="signup-confirm-password" class="signup-input"
+                                            placeholder="Confirm your password" required>
+
+                                        <button type="button" class="toggle-password" id="toggle-confirm-password">
+
+                                            <i class="fa-regular fa-eye"></i>
+
+                                        </button>
+
+                                    </div>
+
+                                    <small class="signup-error" id="confirm-password-error"></small>
+
+                                </div>
+
+                                <!-- Terms -->
+
+                                <div class="signup-terms">
+
+                                    <input type="checkbox" id="signup-terms" required>
+                                    <small class="signup-error" id="terms-error"></small>
+
+                                    <label for="signup-terms">
+                                        I agree to the
+                                        <a href="#">Terms</a>
+                                        &
+                                        <a href="#">Privacy Policy</a>
+                                    </label>
+
+                                </div>
+
+                                <!-- Button -->
+
+                                <button type="submit" class="primary-btn signup-btn" id="signup-btn" disabled>
+                                    Create Free Account
+                                </button>
+
+                            </form>
+
+                            <!-- Footer -->
+
+                            <div class="signup-footer">
+
+                                <p>
+
+                                    Already have an account?
+
+                                    <a href="#" id="open-login-modal">
+                                        Login
+                                    </a>
+
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ===================================================== -->
+                <!-- OTP Verification Modal -->
+                <!-- ===================================================== -->
+
+                <div class="otp-modal" id="otp-modal">
+
+                    <div class="otp-overlay">
+
+                        <div class="otp-modal-content">
+
+                            <!-- Close -->
+
+                            <button class="otp-close-btn" id="otp-close-btn">
+
+                                &times;
+
+                            </button>
+
+                            <!-- Brand -->
+
+                            <div class="otp-brand">
+
+                                <img src="{{ url_for('static', filename='brand/beatifycmple.png') }}" alt="Beatify Logo"
+                                    class="otp-logo">
+
+                            </div>
+
+                            <!-- Title -->
+
+                            <h1 class="otp-title">
+
+                                Verify Your Email
+
+                            </h1>
+
+                            <p class="otp-subtitle">
+
+                                We've sent a 6-digit verification code to
+
+                            </p>
+
+                            <p class="otp-email" id="otp-email">
+
+                                example@gmail.com
+
+                            </p>
+
+                            <!-- OTP Boxes -->
+
+                            <div class="otp-input-container">
+
+                                <input type="text" maxlength="1" class="otp-input" inputmode="numeric"
+                                    autocomplete="one-time-code">
+
+                                <input type="text" maxlength="1" class="otp-input" inputmode="numeric"
+                                    autocomplete="one-time-code">
+
+                                <input type="text" maxlength="1" class="otp-input" inputmode="numeric"
+                                    autocomplete="one-time-code">
+
+                                <input type="text" maxlength="1" class="otp-input" inputmode="numeric"
+                                    autocomplete="one-time-code">
+
+                                <input type="text" maxlength="1" class="otp-input" inputmode="numeric"
+                                    autocomplete="one-time-code">
+
+                                <input type="text" maxlength="1" class="otp-input" inputmode="numeric"
+                                    autocomplete="one-time-code">
+
+                            </div>
+
+                            <!-- Inline Error -->
+
+                            <small class="otp-error" id="otp-error">
+
+                            </small>
+
+                            <!-- Verify Button -->
+
+                            <button class="primary-btn otp-btn" id="verify-otp-btn" disabled>
+
+                                Verify OTP
+
+                            </button>
+
+                            <!-- Timer -->
+
+                            <p class="otp-timer">
+
+                                Code expires in
+
+                                <span id="otp-timer">
+
+                                    05:00
+
+                                </span>
+
+                            </p>
+
+                            <!-- Resend OTP -->
+
+                            <p class="otp-resend">
+
+                                Didn't receive the code?
+
+                                <span id="resend-otp">
+
+                                    Resend OTP
+
+                                </span>
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ===================================================== -->
+                <!-- Login Modal -->
+                <!-- ===================================================== -->
+
+                <div class="login-modal" id="login-modal">
+
+                    <div class="login-overlay">
+
+                        <div class="login-modal-content">
+
+                            <!-- Close Button -->
+
+                            <button class="login-close-btn" id="login-close-btn">
+                                &times;
+                            </button>
+
+                            <!-- Brand -->
+
+                            <div class="login-brand">
+
+                                <img src="{{ url_for('static', filename='brand/Beatifycmple.png') }}" alt="Beatify Logo"
+                                    class="login-logo">
+
+                                <!-- <h2 class="login-brand-name">
+                                    Beatify
+                                </h2> -->
+
+                            </div>
+
+                            <!-- Title -->
+
+                            <h1 class="login-title">
+                                Welcome Back
+                            </h1>
+
+                            <p class="login-subtitle">
+                                Login to continue listening.
+                            </p>
+
+                            <!-- Login Form -->
+
+                            <form id="login-form" class="login-form" novalidate>
+
+                                <!-- Email / Username -->
+
+                                <div class="login-form-group">
+
+                                    <label for="login-identifier">
+                                        Email or Username
+                                    </label>
+
+                                    <input type="text" id="login-identifier" class="login-input"
+                                        placeholder="Enter email or username">
+
+                                    <small class="login-error" id="identifier-error">
+                                    </small>
+
+                                </div>
+
+                                <!-- Password -->
+
+                                <div class="login-form-group">
+
+                                    <label for="login-password">
+                                        Password
+                                    </label>
+
+                                    <input type="password" id="login-password" class="login-input"
+                                        placeholder="Enter your password">
+
+                                    <small class="login-error" id="login-password-error">
+                                    </small>
+
+                                </div>
+
+                                <!-- Remember -->
+
+                                <div class="login-options">
+
+                                    <div>
+
+                                        <input type="checkbox" id="remember-me">
+
+                                        <label for="remember-me">
+                                            Remember Me
+                                        </label>
+
+                                    </div>
+
+                                    <a href="#" id="forgot-password">
+                                        Forgot Password?
+                                    </a>
+
+                                </div>
+
+                                <!-- Login Button -->
+
+                                <button type="submit" class="primary-btn login-btn">
+
+                                    Login
+
+                                </button>
+
+                            </form>
+
+                            <!-- Footer -->
+
+                            <div class="login-footer">
+
+                                <p>
+
+                                    Don't have an account?
+
+                                    <a href="#" id="open-signup-modal">
+
+                                        Sign Up
+
+                                    </a>
+
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- ==========================================
+                     Update Profile Modal
+                ========================================== -->
+
+                <div class="update-profile-modal" id="update-profile-modal">
+
+                    <div class="update-profile-overlay">
+
+                        <div class="update-profile-modal-content">
+
+                            <!-- Close Button -->
+
+                            <button class="update-profile-close-btn signup-close-btn" id="update-profile-close-btn">
+
+                                &times;
+
+                            </button>
+
+                            <h1 class="update-profile-title">
+
+                                Update Profile
+
+                            </h1>
+
+                            <p class="update-profile-subtitle">
+
+                                Keep your Beatify profile up to date.
+
+                            </p>
+                            <!-- Title -->
+
+                            <div class="update-profile-avatar-section">
+
+                                <div class="update-profile-avatar" id="update-profile-avatar">
+
+                                    <img id="update-profile-photo" src="" alt="Profile Photo">
+
+                                    <span id="update-profile-letter">
+
+                                        P
+
+                                    </span>
+
+                                </div>
+
+                                <button type="button" id="change-profile-photo-btn" class="change-profile-photo-btn">
+
+                                    Change Photo
+
+                                </button>
+
+                            </div>
+
+                            <!-- Yahan se profile form start hoga -->
+                            <form id="update-profile-form" class="update-profile-form">
+                                <!-- ==========================================
+                                     Full Name
+                                ========================================== -->
+
+                                <div class="update-profile-form-group">
+
+                                    <label for="update-full-name">
+
+                                        Full Name
+
+                                    </label>
+
+                                    <input type="text" id="update-full-name" name="full_name"
+                                        placeholder="Enter your full name" maxlength="50">
+
+                                </div>
+
+                                <!-- ==========================================
+                                     Username
+                                ========================================== -->
+
+                                <div class="update-profile-form-group">
+
+                                    <label for="update-username">
+
+                                        Username
+
+                                    </label>
+
+                                    <input type="text" id="update-username" name="username"
+                                        placeholder="Enter your username" maxlength="30">
+
+                                </div>
+
+                                <!-- ==========================================
+                                    Email
+                                ========================================== -->
+
+                                <div class="update-profile-form-group">
+
+                                    <label for="update-email">
+
+                                        Email
+
+                                    </label>
+
+                                    <input type="email" id="update-email" name="email" readonly>
+
+                                </div>
+
+                            </form>
+
+                            <div class="update-profile-actions">
+
+                                <button type="button" id="update-profile-cancel-btn" class="update-profile-cancel-btn">
+
+                                    Cancel
+
+                                </button>
+
+                                <button type="submit" id="save-profile-btn" class="update-profile-save-btn">
+
+                                    Save Changes
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div id="featured-section" class="spotifyPlaylist">
+
+                    <div id="view-all-section">
+
+                        <h1 id="playlist-title">
+
+                            Featured Playlists
+
+                        </h1>
+                        <div class="card-container">
+                            {% for album in albums %}
+
+                            <div data-folder="{{ album.folder }}" class="card">
+
+                                <div class="play">
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"
+                                        fill="#000">
+
+                                        <path
+                                            d="M18.8906 12.846C18.5371 14.189 16.8667 15.138 13.5257 17.0361C10.296 18.8709 8.6812 19.7884 7.37983 19.4196C6.8418 19.2671 6.35159 18.9776 5.95624 18.5787C5 17.6139 5 15.7426 5 12C5 8.2574 5 6.3861 5.95624 5.42132C6.35159 5.02245 6.8418 4.73288 7.37983 4.58042C8.6812 4.21165 10.296 5.12907 13.5257 6.96393C16.8667 8.86197 18.5371 9.811 18.8906 11.154C19.0365 11.7084 19.0365 12.2916 18.8906 12.846Z" />
+
+                                    </svg>
+
+                                </div>
+
+                                <div class="card_img">
+
+                                    <img src="{{ album.cover }}" alt="">
+
+                                </div>
+
+                                <h2>{{ album.title }}</h2>
+
+                                <p>{{ album.description }}</p>
+
+                            </div>
+
+                            {% endfor %}
+
+
+
+
+                        </div>
+
+
                     </div>
                 </div>
-                <div class="spotifyPlaylist">
-                    <h1>Spotify Playlist</h1>
-                    <div class="card-container">
-                        {% for album in albums %}
 
-                        <div data-folder="{{ album.folder }}" class="card">
+                <div id="collections-section" class="spotifyPlaylist">
 
-                            <div class="play">
+                    <div id="collections-header" class="section-header">
 
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"
-                                    fill="#000">
+                        <h1>Your Collections</h1>
 
-                                    <path
-                                        d="M18.8906 12.846C18.5371 14.189 16.8667 15.138 13.5257 17.0361C10.296 18.8709 8.6812 19.7884 7.37983 19.4196C6.8418 19.2671 6.35159 18.9776 5.95624 18.5787C5 17.6139 5 15.7426 5 12C5 8.2574 5 6.3861 5.95624 5.42132C6.35159 5.02245 6.8418 4.73288 7.37983 4.58042C8.6812 4.21165 10.296 5.12907 13.5257 6.96393C16.8667 8.86197 18.5371 9.811 18.8906 11.154C19.0365 11.7084 19.0365 12.2916 18.8906 12.846Z" />
+                        <button id="create-collection-btn" class="create-collection-btn">
 
-                                </svg>
+                            + Create
 
-                            </div>
-
-                            <div class="card_img">
-
-                                <img src="{{ album.cover }}" alt="">
-
-                            </div>
-
-                            <h2>{{ album.title }}</h2>
-
-                            <p>{{ album.description }}</p>
-
-                        </div>
-
-                        {% endfor %}
-
-                        <!-- <div data-folder= "ncs" class="card">
-                            <div class="play">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"
-                                    color="currentColor" fill="#000" stroke="#000" stroke-width="1.5"
-                                    stroke-linejoin="round">
-                                    <path
-                                        d="M18.8906 12.846C18.5371 14.189 16.8667 15.138 13.5257 17.0361C10.296 18.8709 8.6812 19.7884 7.37983 19.4196C6.8418 19.2671 6.35159 18.9776 5.95624 18.5787C5 17.6139 5 15.7426 5 12C5 8.2574 5 6.3861 5.95624 5.42132C6.35159 5.02245 6.8418 4.73288 7.37983 4.58042C8.6812 4.21165 10.296 5.12907 13.5257 6.96393C16.8667 8.86197 18.5371 9.811 18.8906 11.154C19.0365 11.7084 19.0365 12.2916 18.8906 12.846Z">
-                                    </path>
-                                </svg>
-                            </div>
-                            <div class="card_img">
-                                <img src="image/image.png" alt="">
-                            </div>
-                            <h2>Happy Hits!</h2>
-                            <p>Hits to boost your mood and fil you with happines!</p>
-                        </div>
-
-                        <div data-folder= "cs" class="card">
-                            <div class="play">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"
-                                    color="currentColor" fill="#000" stroke="#000" stroke-width="1.5"
-                                    stroke-linejoin="round">
-                                    <path
-                                        d="M18.8906 12.846C18.5371 14.189 16.8667 15.138 13.5257 17.0361C10.296 18.8709 8.6812 19.7884 7.37983 19.4196C6.8418 19.2671 6.35159 18.9776 5.95624 18.5787C5 17.6139 5 15.7426 5 12C5 8.2574 5 6.3861 5.95624 5.42132C6.35159 5.02245 6.8418 4.73288 7.37983 4.58042C8.6812 4.21165 10.296 5.12907 13.5257 6.96393C16.8667 8.86197 18.5371 9.811 18.8906 11.154C19.0365 11.7084 19.0365 12.2916 18.8906 12.846Z">
-                                    </path>
-                                </svg>
-                            </div>
-                            <img src="image/image.png" alt="">
-                            <h2>Happy Hits!</h2>
-                            <p>Hits to boost your mood and fil you with happines!</p>
-                        </div> -->
-
-
+                        </button>
 
                     </div>
-                    <div class="playbar">
-                        <div class="seekbar">
-                            <div class="circle"></div>
+
+                    <div id="collections-container" class="card-container">
+
+                    </div>
+
+                </div>
+
+                <div id="collection-details-section" style="display:none;">
+
+                    <button id="back-to-collections">
+                        ← Back
+                    </button>
+
+                    <div class="collection-details-header">
+
+                        <img id="collection-cover-image" src="/static/img/default_collection.jpeg">
+
+                        <div>
+
+                            <h1 id="collection-title">
+                                Collection Name
+                            </h1>
+
+                            <p id="collection-song-count">
+                                0 Songs
+                            </p>
+
+                            <button id="add-song-btn">
+                                + Add Songs
+                            </button>
+
                         </div>
-                        <div class="operator">
-                            <div class="songinfo"></div>
-                            <div class="playsection">
-                                <img id="previous" src="{{ url_for('static', filename='svg/previoussong.svg') }}" alt=""
-                                    class="invert1">
-                                <img id="play" src="{{ url_for('static', filename='svg/play.svg') }}" alt=""
-                                    class="invert1">
-                                <img id="next" src="{{ url_for('static', filename='svg/nextsong.svg') }}" alt=""
-                                    class="invert1">
-                            </div>
-                            <div class="songtime"></div>
+
+                    </div>
+
+                    <div id="collection-song-list">
+
+                    </div>
+
+                </div>
+
+                <div class="playbar">
+                    <div class="seekbar">
+                        <div class="circle"></div>
+                    </div>
+                    <div class="operator">
+                        <div class="songinfo"></div>
+                        <div class="playsection">
+                            <img id="previous" src="{{ url_for('static', filename='svg/previoussong.svg') }}" alt=""
+                                class="invert1">
+                            <img id="play" src="{{ url_for('static', filename='svg/play.svg') }}" alt=""
+                                class="invert1">
+                            <img id="next" src="{{ url_for('static', filename='svg/nextsong.svg') }}" alt=""
+                                class="invert1">
                         </div>
+                        <div class="songtime"></div>
                     </div>
                 </div>
+
+
             </div>
         </main>
         <footer></footer>
     </div>
+
+    <!-- ==========================================
+     Toast Notification
+    ========================================== -->
+
+    <div class="toast" id="toast">
+
+        <span class="toast-icon" id="toast-icon">
+
+            ✓
+
+        </span>
+
+        <span class="toast-message" id="toast-message">
+
+            Success
+
+        </span>
+
+    </div>
+
+    <!-- ========================= -->
+    <!-- Create Collection Modal -->
+    <!-- ========================= -->
+
+    <div id="collection-modal" class="collection-modal">
+
+        <div class="collection-modal-content">
+
+            <div class="collection-modal-header">
+
+                <h2>Create Collection</h2>
+
+                <button id="close-collection-modal">
+
+                    <i class="fa-solid fa-xmark"></i>
+
+                </button>
+
+            </div>
+
+            <div class="collection-modal-body">
+
+                <label>
+
+                    Collection Name
+
+                </label>
+
+                <input type="text" id="collection-name" placeholder="My Playlist">
+
+                <label>
+
+                    Description
+
+                </label>
+
+                <textarea id="collection-description" placeholder="Write something..."></textarea>
+
+                <label>
+
+                    Cover Image (Optional)
+
+                </label>
+
+                <input type="file" id="collection-cover" accept="image/*">
+
+            </div>
+
+            <div class="collection-modal-footer">
+
+                <button id="cancel-collection">
+
+                    Cancel
+
+                </button>
+
+                <button id="create-collection">
+
+                    Create
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+    <input type="file" id="songUploader" accept="audio/*" multiple hidden>
+
+    
+    <script src="{{ url_for('static', filename='js/indexeddb.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/collection.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/song_db.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/collection_song.js') }}"></script>
     <script src="{{ url_for('static', filename='js/script2.js') }}"></script>
+
+    
+
 </body>
 
-</html>>
+</html>

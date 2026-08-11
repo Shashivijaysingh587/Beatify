@@ -12,6 +12,10 @@ Author : Pallav Kumar
 """
 
 import os
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 
 # ======================================================
@@ -24,7 +28,10 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 # Flask Configuration
 # ======================================================
 
-SECRET_KEY = "CHANGE_ME_LATER"
+SECRET_KEY = os.getenv(
+    "SECRET_KEY",
+    "CHANGE_ME_LATER"
+)
 
 # =========================================================
 # MySQL Database Configuration
@@ -50,6 +57,32 @@ SQLALCHEMY_TRACK_MODIFICATIONS = False
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "static", "uploads")
 
 # ======================================================
+# Profile Image Upload
+# ======================================================
+
+PROFILE_IMAGE_FOLDER = os.path.join(
+
+    UPLOAD_FOLDER,
+
+    "profile_images"
+
+)
+
+ALLOWED_IMAGE_EXTENSIONS = {
+
+    "png",
+
+    "jpg",
+
+    "jpeg",
+
+    "webp"
+
+}
+
+MAX_PROFILE_IMAGE_SIZE = 5 * 1024 * 1024
+
+# ======================================================
 # MySQL Configuration
 # ======================================================
 
@@ -70,9 +103,13 @@ MAIL_PORT = 587
 
 MAIL_USE_TLS = True
 
-MAIL_USERNAME = ""
+MAIL_USE_SSL = False
 
-MAIL_PASSWORD = ""
+MAIL_USERNAME = os.getenv("MAIL_USERNAME")
+
+MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")
+
+MAIL_DEFAULT_SENDER = os.getenv("MAIL_USERNAME")
 
 # ======================================================
 # OTP
@@ -81,3 +118,5 @@ MAIL_PASSWORD = ""
 OTP_LENGTH = 6
 
 OTP_EXPIRY_MINUTES = 5
+
+RESEND_OTP_COOLDOWN = 60

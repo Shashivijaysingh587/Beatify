@@ -65,7 +65,17 @@ class User(db.Model):
         default=False
     )
 
+    is_active = db.Column(
+    db.Boolean,
+    default=True,
+    nullable=False
+    )
 
+    is_admin = db.Column(
+    db.Boolean,
+    default=False,
+    nullable=False
+    )
 
     reset_password_otp = db.Column(
         db.String(6),

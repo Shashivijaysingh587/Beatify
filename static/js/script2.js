@@ -11,11 +11,19 @@ let otpCountdown = null;
 
 let otpRemainingSeconds = 0;
 
+
 // =====================================================
 // User Session
 // =====================================================
 
 let isLoggedIn = false;
+
+let userHeartbeatInterval = null;
+
+let activeUsersCheckInterval = null;
+
+const activeUsersDot =
+    document.getElementById("active-users-dot");
 
 let currentUser = null;
 
@@ -117,6 +125,11 @@ const sidebarDropdown = document.getElementById("sidebar-dropdown");
 const updateProfileButton = document.getElementById("update-profile-btn");
 
 const logoutButton = document.getElementById("logout-btn");
+
+const adminDashboardButton =
+    document.getElementById(
+        "admin-dashboard-btn"
+    );
 
 // =====================================================
 // Signup Form
@@ -358,11 +371,185 @@ const backToCollections =
 const addSongBtn =
     document.getElementById("add-song-btn");
 
+
+// trackig song
+let currentPlaylist = [];
+
+let currentPlaylistIndex = -1;
+
+let currentPlaylistType = "viewall";
+
+// online user popup
+
+const activeUsersButton =
+    document.getElementById(
+        "active-users-button"
+    );
+
+const activeUsersPopup =
+    document.getElementById(
+        "active-users-popup"
+    );
+// mobile collection 
+
+
+const mobileCollectionMenu =
+    document.getElementById("mobile-collection-menu");
+
+const collectionTabs =
+    document.querySelector(".collection-tabs");
+
+
+// =====================================================
+// Song Search Popup
+// =====================================================
+
+const songSearchInput =
+    document.getElementById("song-search-input");
+
+const songSearchPopup =
+    document.getElementById("song-search-popup");
+
+const songSearchResults =
+    document.getElementById("song-search-results");
+
+const closeSongSearch =
+    document.getElementById("close-song-search");
+
+
+// =====================================================
+// Verification Warning Modal
+// =====================================================
+
+const verificationWarningModal =
+    document.getElementById(
+        "verification-warning-modal"
+    );
+
+const continueVerificationBtn =
+    document.getElementById(
+        "continue-verification-btn"
+    );
+
+const newSignupBtn =
+    document.getElementById(
+        "new-signup-btn"
+    );
+
+const verificationWarningClose =
+    document.getElementById(
+        "verification-warning-close"
+    );
+
+// collection card delete conformation
+const deleteCollectionModal =
+    document.getElementById(
+        "delete-collection-modal"
+    );
+
+const deleteCollectionMessage =
+    document.getElementById(
+        "delete-collection-message"
+    );
+
+const cancelDeleteCollection =
+    document.getElementById(
+        "cancel-delete-collection"
+    );
+
+const confirmDeleteCollection =
+    document.getElementById(
+        "confirm-delete-collection"
+    );
+
+
+let collectionToDelete = null;
+
+// forgot password
+const forgotPasswordEmail =
+    document.getElementById(
+        "forgot-password-email"
+    );
+
+const forgotPasswordEmailError =
+    document.getElementById(
+        "forgot-password-email-error"
+    );
+
+const sendForgotPasswordOtp =
+    document.getElementById(
+        "send-forgot-password-otp"
+    );
+
+
+// reset password
+
+// ==========================================================
+// Password Reset Modal
+// ==========================================================
+
+const passwordResetModal =
+    document.getElementById(
+        "password-reset-modal"
+    );
+
+const passwordResetCloseBtn =
+    document.getElementById(
+        "password-reset-close-btn"
+    );
+
+const resetPasswordInput =
+    document.getElementById(
+        "reset-password"
+    );
+
+const resetConfirmPasswordInput =
+    document.getElementById(
+        "reset-confirm-password"
+    );
+
+const toggleResetPassword =
+    document.getElementById(
+        "toggle-reset-password"
+    );
+
+const toggleResetConfirmPassword =
+    document.getElementById(
+        "toggle-reset-confirm-password"
+    );
+
+const resetPasswordError =
+    document.getElementById(
+        "reset-password-error"
+    );
+
+const resetConfirmPasswordError =
+    document.getElementById(
+        "reset-confirm-password-error"
+    );
+
+const resetPasswordStrengthBar =
+    document.getElementById(
+        "reset-password-strength-bar"
+    );
+
+const resetPasswordStrengthText =
+    document.getElementById(
+        "reset-password-strength-text"
+    );
+
+const resetPasswordBtn =
+    document.getElementById(
+        "reset-password-btn"
+    );
+
 // ==========================================================
 // Pending Signup Email
 // ==========================================================
 
 let pendingSignupEmail = "";
+
+let otpVerificationMode = "signup";
 
 
 
@@ -388,6 +575,10 @@ async function getSongs(folder) {
 
     songs = await response.json();
 
+    currentPlaylist = songs;
+    currentPlaylistType = "viewall";
+    currentPlaylistIndex = -1;
+
     let songUl = document.querySelector(".songList ul");
 
     songUl.innerHTML = "";
@@ -395,7 +586,7 @@ async function getSongs(folder) {
     for (const song of songs) {
 
         songUl.innerHTML += `
-        <li>
+        <li data-track="${encodeURIComponent(song)}">
             <div class="album">
                 <div>
                     <img src="/static/svg/music.svg" alt="" class="invert1 musicimg">
@@ -477,12 +668,36 @@ viewAllButton.addEventListener(
 
 );
 
+viewAllButton.addEventListener(
+    "click",
+    function () {
+
+        collectionTabs.classList.remove(
+            "show-mobile-tabs"
+        );
+
+    }
+);
+
+
 yourCollectionsButton.addEventListener(
 
     "click",
 
     showYourCollections
 
+
+);
+
+yourCollectionsButton.addEventListener(
+    "click",
+    function () {
+
+        collectionTabs.classList.remove(
+            "show-mobile-tabs"
+        );
+
+    }
 );
 
 addSongBtn.addEventListener(
@@ -580,9 +795,12 @@ function saveCollectionLocal(collection) {
 
 function createNewCollection() {
 
-    const name = collectionName.value.trim();
+    const name =
+        collectionName.value.trim();
 
-    const description = collectionDescription.value.trim();
+    const description =
+        collectionDescription.value.trim();
+
 
     if (name === "") {
 
@@ -594,6 +812,24 @@ function createNewCollection() {
 
     }
 
+
+    // ----------------------------------------
+    // Get Selected Cover Image
+    // ----------------------------------------
+
+    const coverInput =
+        document.getElementById(
+            "collection-cover"
+        );
+
+    const coverFile =
+        coverInput.files[0] || null;
+
+
+    // ----------------------------------------
+    // Create Collection
+    // ----------------------------------------
+
     const collection = {
 
         id: "col_" + Date.now(),
@@ -602,25 +838,40 @@ function createNewCollection() {
 
         description: description,
 
-        cover: "",
+        cover: coverFile,
 
         songs: [],
 
-        createdAt: new Date().toISOString()
+        createdAt:
+            new Date().toISOString()
 
     };
 
-    saveCollection(collection, function () {
 
-        console.log("Collection Saved Successfully");
+    saveCollection(
+        collection,
+        function () {
 
-        loadCollectionsFromDB();
+            console.log(
+                "Collection Saved Successfully"
+            );
 
-    });
+            loadCollectionsFromDB();
+
+        }
+    );
+
+
+    // ----------------------------------------
+    // Clear Form
+    // ----------------------------------------
 
     collectionName.value = "";
 
     collectionDescription.value = "";
+
+    coverInput.value = "";
+
 
     closeCollectionModal();
 
@@ -660,14 +911,28 @@ function loadCollections() {
 
 
 
-document.addEventListener("click", function (e) {
+document.addEventListener("click", function (event) {
 
-    const card = e.target.closest(".collection-card");
+    // Collection menu/button par click hua hai
+    if (
+        event.target.closest(".collection-menu-btn") ||
+        event.target.closest(".collection-menu")
+    ) {
+        return;
+    }
 
-    if (!card) return;
 
-    openCollection(card.dataset.id);
-    
+    const card =
+        event.target.closest(".collection-card");
+
+    if (!card) {
+        return;
+    }
+
+
+    openCollection(
+        card.dataset.id
+    );
 
 });
 
@@ -700,6 +965,536 @@ backToCollections.addEventListener("click", function () {
     collectionsSection.style.display = "block";
 
 });
+// =====================================================
+// Open Warning Modal
+// =====================================================
+
+function openVerificationWarning() {
+
+    verificationWarningModal.classList.add(
+        "show"
+    );
+
+}
+
+
+// =====================================================
+// Close Warning Modal
+// =====================================================
+
+function closeVerificationWarning() {
+
+    verificationWarningModal.classList.remove(
+        "show"
+    );
+
+}
+
+// =====================================================
+// Continue Existing Verification
+// =====================================================
+
+continueVerificationBtn.addEventListener(
+    "click",
+    function () {
+
+        closeVerificationWarning();
+
+        otpVerificationMode = "signup";
+
+        // Existing OTP modal खोलो
+        openOtpModal();
+
+    }
+);
+
+verificationWarningClose.addEventListener(
+    "click",
+    function () {
+
+        closeVerificationWarning();
+
+    }
+);
+
+
+verificationWarningModal.addEventListener(
+    "click",
+    function (event) {
+
+        if (
+            event.target ===
+            verificationWarningModal
+        ) {
+
+            closeVerificationWarning();
+
+        }
+
+    }
+);
+
+function openDeleteCollectionModal(collection) {
+
+    collectionToDelete =
+        collection;
+
+    deleteCollectionMessage.textContent =
+        `Are you sure you want to delete "${collection.name}"?`;
+
+    deleteCollectionModal.classList.add(
+        "show"
+    );
+
+}
+cancelDeleteCollection.addEventListener(
+    "click",
+    function () {
+
+        collectionToDelete =
+            null;
+
+        deleteCollectionModal.classList.remove(
+            "show"
+        );
+
+    }
+);
+
+confirmDeleteCollection.addEventListener(
+    "click",
+    function () {
+
+        if (!collectionToDelete) {
+            return;
+        }
+
+
+        const collectionId =
+            collectionToDelete.id;
+
+
+        deleteCollectionModal.classList.remove(
+            "show"
+        );
+
+
+        deleteCollectionFromDB(
+            collectionId,
+            function () {
+
+                loadCollectionsFromDB();
+
+
+                if (
+                    currentCollectionId ===
+                    collectionId
+                ) {
+
+                    currentCollectionId =
+                        null;
+
+                    collectionDetailsSection
+                        .style
+                        .display = "none";
+
+                    collectionsSection
+                        .style
+                        .display = "block";
+
+                }
+
+
+                showToast(
+                    "Collection deleted successfully.",
+                    "success"
+                );
+
+
+                collectionToDelete =
+                    null;
+
+            }
+        );
+
+    }
+);
+
+// collection card operation
+
+document.addEventListener(
+    "click",
+    function (event) {
+
+        // ========================================
+        // COLLECTION MENU BUTTON
+        // ========================================
+
+        const menuButton =
+            event.target.closest(
+                ".collection-menu-btn"
+            );
+
+        if (menuButton) {
+
+            event.stopPropagation();
+
+            const card =
+                menuButton.closest(
+                    ".collection-card"
+                );
+
+            if (!card) {
+                return;
+            }
+
+
+            const menu =
+                card.querySelector(
+                    ".collection-menu"
+                );
+
+            if (!menu) {
+                return;
+            }
+
+
+            // Close other menus
+
+            document
+                .querySelectorAll(
+                    ".collection-menu.show"
+                )
+                .forEach(
+                    function (otherMenu) {
+
+                        if (
+                            otherMenu !== menu
+                        ) {
+
+                            otherMenu.classList.remove(
+                                "show"
+                            );
+
+                        }
+
+                    }
+                );
+
+
+            // Toggle current menu
+
+            menu.classList.toggle("show");
+
+            return;
+        }
+
+
+        // ========================================
+        // RENAME
+        // ========================================
+
+        const renameButton =
+            event.target.closest(
+                ".rename-collection-btn"
+            );
+
+        if (renameButton) {
+
+            event.stopPropagation();
+
+            const collectionId =
+                renameButton.dataset.id;
+
+
+            // Close menu
+
+            const menu =
+                renameButton.closest(
+                    ".collection-menu"
+                );
+
+            if (menu) {
+
+                menu.classList.remove(
+                    "show"
+                );
+
+            }
+
+
+            renameCollection(
+                collectionId
+            );
+
+            return;
+        }
+
+
+        // ========================================
+        // DELETE
+        // ========================================
+
+        const deleteButton =
+            event.target.closest(
+                ".delete-collection-btn"
+            );
+
+        if (deleteButton) {
+
+            event.stopPropagation();
+
+            const collectionId =
+                deleteButton.dataset.id;
+
+
+            // Close menu
+
+            const menu =
+                deleteButton.closest(
+                    ".collection-menu"
+                );
+
+            if (menu) {
+
+                menu.classList.remove(
+                    "show"
+                );
+
+            }
+
+
+            deleteCollection(
+                collectionId
+            );
+
+            return;
+        }
+
+
+        // ========================================
+        // CLICK OUTSIDE
+        // ========================================
+
+        document
+            .querySelectorAll(
+                ".collection-menu.show"
+            )
+            .forEach(
+                function (menu) {
+
+                    menu.classList.remove(
+                        "show"
+                    );
+
+                }
+            );
+
+    }
+);
+
+function renameCollection(collectionId) {
+
+    getAllCollections(function (collections) {
+
+        const collection =
+            collections.find(
+                function (item) {
+
+                    return item.id === collectionId;
+
+                }
+            );
+
+
+        if (!collection) {
+
+            console.error(
+                "Collection not found."
+            );
+
+            return;
+
+        }
+
+
+        const newName =
+            prompt(
+                "Enter new collection name:",
+                collection.name
+            );
+
+
+        // Cancel
+        if (newName === null) {
+            return;
+        }
+
+
+        const trimmedName =
+            newName.trim();
+
+
+        // Empty name
+        if (trimmedName === "") {
+
+            showToast(
+                "Collection name cannot be empty.",
+                "error"
+            );
+
+            return;
+
+        }
+
+
+        // Same name
+        if (
+            trimmedName ===
+            collection.name
+        ) {
+
+            return;
+
+        }
+
+
+        collection.name =
+            trimmedName;
+
+
+        saveCollection(
+            collection,
+            function () {
+
+                console.log(
+                    "✅ Collection Renamed"
+                );
+
+                loadCollectionsFromDB();
+
+
+                // If currently opened
+                // collection is same one
+
+                if (
+                    currentCollectionId ===
+                    collectionId
+                ) {
+
+                    collectionTitle.textContent =
+                        collection.name;
+
+                }
+
+
+                showToast(
+                    "Collection renamed successfully.",
+                    "success"
+                );
+
+            }
+        );
+
+    });
+
+}
+
+function deleteCollection(collectionId) {
+
+    getAllCollections(function (collections) {
+
+        const collection =
+            collections.find(
+                function (item) {
+
+                    return item.id === collectionId;
+
+                }
+            );
+
+
+        if (!collection) {
+
+            console.error(
+                "Collection not found."
+            );
+
+            return;
+
+        }
+
+
+        openDeleteCollectionModal(
+            collection
+        );
+
+    });
+
+}
+
+function deleteCollectionFromDB(
+    collectionId,
+    callback
+) {
+
+    if (!db) {
+
+        console.error(
+            "Database not ready."
+        );
+
+        return;
+
+    }
+
+
+    const transaction =
+        db.transaction(
+            "collections",
+            "readwrite"
+        );
+
+
+    const store =
+        transaction.objectStore(
+            "collections"
+        );
+
+
+    const request =
+        store.delete(
+            collectionId
+        );
+
+
+    request.onsuccess =
+        function () {
+
+            console.log(
+                "Collection deleted from IndexedDB."
+            );
+
+            if (callback) {
+
+                callback();
+
+            }
+
+        };
+
+
+    request.onerror =
+        function (event) {
+
+            console.error(
+                "Failed to delete collection:",
+                event.target.error
+            );
+
+        };
+
+}
 
 // =====================================================
 // Signup Modal Functions
@@ -990,6 +1785,9 @@ function closeOtpModal() {
 
     pendingSignupEmail = "";
 
+    let passwordResetEmail = "";
+    let otpVerificationMode = "signup";
+
     // ----------------------------------------
     // Enable Create Free Account Button
     // ----------------------------------------
@@ -1095,104 +1893,401 @@ function startOtpCountdown(seconds) {
 // Resend Verification Code
 // ==========================================================
 
-resendOtpButton.addEventListener("click", async function () {
+resendOtpButton.addEventListener(
+    "click",
+    async function () {
 
-    // ----------------------------------------
-    // Disable Button
-    // ----------------------------------------
+        // ----------------------------------------
+        // Prevent Multiple Clicks
+        // ----------------------------------------
 
-    resendOtpButton.classList.add(
-        "disabled-resend"
-    );
+        resendOtpButton.disabled = true;
 
-    try {
 
-        const response = await fetch(
+        try {
 
-            "/resend-otp",
+            // ------------------------------------
+            // Select Endpoint
+            // ------------------------------------
 
-            {
+            const resendUrl =
+                otpVerificationMode === "password-reset"
+                    ? "/resend-password-reset-otp"
+                    : "/resend-otp";
 
-                method: "POST",
 
-                headers: {
+            // ------------------------------------
+            // Send Request
+            // ------------------------------------
 
-                    "Content-Type": "application/json"
+            const response = await fetch(
+                resendUrl,
+                {
+                    method: "POST",
 
-                },
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
 
-                body: JSON.stringify({
+                    body: JSON.stringify({
 
-                    email: pendingSignupEmail
+                        email:
+                            pendingSignupEmail
 
-                })
+                    })
+                }
+            );
 
+
+            const result =
+                await response.json();
+
+
+            // ------------------------------------
+            // Failed
+            // ------------------------------------
+
+            if (!result.success) {
+
+                showToast(
+                    result.message,
+                    "error"
+                );
+
+                resendOtpButton.disabled =
+                    false;
+
+                return;
             }
 
-        );
 
-        const result =
-            await response.json();
-
-        console.log(result);
-        // ----------------------------------------
-        // Success
-        // ----------------------------------------
-
-        if (result.success) {
+            // ------------------------------------
+            // Success
+            // ------------------------------------
 
             showToast(
                 result.message,
                 "success"
             );
 
-            // Restart Timer
+            otpInputs.forEach(
+                input => {
+                    input.value = "";
+                }
+            );
+
+            // ------------------------------------
+            // Update Email
+            // ------------------------------------
+
+            if (
+                result.data &&
+                result.data.email
+            ) {
+
+                pendingSignupEmail =
+                    result.data.email;
+
+                otpEmail.textContent =
+                    result.data.email;
+
+            }
+
+
+            // ------------------------------------
+            // Restart Countdown
+            // ------------------------------------
+
             startOtpCountdown(
                 result.data.remaining_seconds
             );
 
-            // Clear OTP Boxes
-            otpInputs.forEach(input => {
-
-                input.value = "";
-
-            });
-
-            // Focus First Input
-            otpInputs[0].focus();
 
         }
-        else {
+        catch (error) {
+
+            console.error(
+                "Resend OTP Error:",
+                error
+            );
+
 
             showToast(
-                result.message,
+                "Something went wrong. Please try again.",
                 "error"
             );
 
-            resendOtpButton.classList.remove(
-                "disabled-resend"
+        }
+
+
+        // ----------------------------------------
+        // Enable Button
+        // ----------------------------------------
+
+        resendOtpButton.disabled =
+            false;
+
+    }
+);
+
+// forgot password button event
+
+sendForgotPasswordOtp.addEventListener(
+    "click",
+    async function () {
+
+        const email =
+            forgotPasswordEmail.value
+                .trim()
+                .toLowerCase();
+
+
+        // ----------------------------------------
+        // Clear Previous Error
+        // ----------------------------------------
+
+        forgotPasswordEmailError.textContent =
+            "";
+
+
+        // ----------------------------------------
+        // Validate Email
+        // ----------------------------------------
+
+        if (!email) {
+
+            forgotPasswordEmailError.textContent =
+                "Please enter your email address.";
+
+            forgotPasswordEmail.focus();
+
+            return;
+
+        }
+
+
+        // ----------------------------------------
+        // Prevent Double Click
+        // ----------------------------------------
+
+        sendForgotPasswordOtp.disabled =
+            true;
+
+        sendForgotPasswordOtp.textContent =
+            "Sending OTP...";
+
+
+        try {
+
+            const response =
+                await fetch(
+                    "/forgot-password",
+                    {
+
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body: JSON.stringify({
+                            email: email
+                        })
+
+                    }
+                );
+
+
+            const result =
+                await response.json();
+
+
+            // ----------------------------------------
+            // Failed
+            // ----------------------------------------
+
+            if (!result.success) {
+
+                forgotPasswordEmailError.textContent =
+                    result.message ||
+                    "Unable to send OTP.";
+
+                sendForgotPasswordOtp.disabled =
+                    false;
+
+                sendForgotPasswordOtp.textContent =
+                    "Send OTP";
+
+                return;
+
+            }
+
+
+            // ----------------------------------------
+            // Success
+            // ----------------------------------------
+
+            showToast(
+                result.message,
+                "success"
             );
+
+
+            // ----------------------------------------
+            // Password Reset OTP Mode
+            // ----------------------------------------
+
+            otpVerificationMode =
+                "password-reset";
+
+
+            // ----------------------------------------
+            // Close Forgot Password Modal
+            // ----------------------------------------
+
+            forgotPasswordModal.classList.remove(
+                "show"
+            );
+
+
+            // ----------------------------------------
+            // Open Existing OTP Modal
+            // ----------------------------------------
+
+            openOtpModal(
+                result.data.email
+            );
+
+
+            // ----------------------------------------
+            // Start Countdown
+            // ----------------------------------------
+
+            startOtpCountdown(
+                result.data.remaining_seconds
+            );
+
+
+            console.log(
+                "Password Reset OTP Sent:",
+                result.data
+            );
+
+
+            sendForgotPasswordOtp.disabled =
+                false;
+
+            sendForgotPasswordOtp.textContent =
+                "Send OTP";
+
+            return;
+
+
+        } catch (error) {
+
+            console.error(
+                "Forgot Password Error:",
+                error
+            );
+
+
+            showToast(
+                "Something went wrong. Please try again.",
+                "error"
+            );
+
+
+            sendForgotPasswordOtp.disabled =
+                false;
+
+            sendForgotPasswordOtp.textContent =
+                "Send OTP";
 
         }
 
     }
+);
 
-    catch (error) {
 
-        console.error(error);
-        showToast(
-            "Something went wrong.",
-            "error"
-        );
+// ==========================================================
+// Password Reset Modal Functions
+// ==========================================================
 
-        resendOtpButton.classList.remove(
-            "disabled-resend"
+function openPasswordResetModal() {
+
+    passwordResetModal.style.display =
+        "block";
+
+
+    resetPasswordInput.value = "";
+
+    resetConfirmPasswordInput.value = "";
+
+    resetPasswordError.textContent = "";
+
+    resetConfirmPasswordError.textContent = "";
+
+    resetPasswordStrengthBar.style.width =
+        "0%";
+
+    resetPasswordStrengthText.textContent =
+        "Strength: -";
+
+
+    resetPasswordInput.focus();
+}
+
+
+function closePasswordResetModal() {
+
+    passwordResetModal.style.display =
+        "none";
+
+
+    resetPasswordInput.value = "";
+
+    resetConfirmPasswordInput.value = "";
+
+    resetPasswordError.textContent = "";
+
+    resetConfirmPasswordError.textContent = "";
+}
+
+passwordResetCloseBtn.addEventListener(
+    "click",
+    function () {
+
+        closePasswordResetModal();
+
+    }
+);
+
+toggleResetPassword.addEventListener(
+    "click",
+    function () {
+
+        togglePasswordVisibility(
+            resetPasswordInput,
+            toggleResetPassword
         );
 
     }
+);
 
-});
 
+toggleResetConfirmPassword.addEventListener(
+    "click",
+    function () {
+
+        togglePasswordVisibility(
+            resetConfirmPasswordInput,
+            toggleResetConfirmPassword
+        );
+
+    }
+);
 
 // ==========================================================
 // OTP Input Navigation
@@ -1345,20 +2440,32 @@ verifyOtpBtn.addEventListener(
 
         if (otp.length !== 6) {
 
-            otpError.textContent =
+            const message =
                 "Please enter the complete 6-digit verification code.";
 
-            return;
+            otpError.textContent = message;
 
+            showToast(
+                message,
+                "error"
+            );
+
+            return;
         }
 
         if (!/^\d{6}$/.test(otp)) {
 
-            otpError.textContent =
+            const message =
                 "Please enter a valid 6-digit verification code.";
 
-            return;
+            otpError.textContent = message;
 
+            showToast(
+                message,
+                "error"
+            );
+
+            return;
         }
 
         verifyOtpBtn.disabled = true;
@@ -1371,10 +2478,14 @@ verifyOtpBtn.addEventListener(
         try {
 
             // fetch
+            const verifyUrl =
+                otpVerificationMode === "password-reset"
+                    ? "/verify-password-reset-otp"
+                    : "/verify-email-otp";
+
+
             const response = await fetch(
-
-                "/verify-email-otp",
-
+                verifyUrl,
                 {
 
                     method: "POST",
@@ -1402,33 +2513,77 @@ verifyOtpBtn.addEventListener(
 
             if (result.success) {
 
-
-                // clearOtpInputs();
-
-                // stopOtpCountdown();
-
-                // checkLoginStatus();
                 verifyOtpBtn.disabled = false;
 
                 verifyOtpBtn.textContent =
                     "Verify OTP";
 
+
+                otpError.textContent = "";
+
+
+                // ========================================
+                // PASSWORD RESET OTP
+                // ========================================
+
+                if (
+                    otpVerificationMode ===
+                    "password-reset"
+                ) {
+
+                    // ----------------------------------------
+                    // Save Email Before Closing OTP Modal
+                    // ----------------------------------------
+
+                    passwordResetEmail =
+                        pendingSignupEmail;
+
+
+                    // ----------------------------------------
+                    // Close OTP Modal
+                    // ----------------------------------------
+
+                    closeOtpModal();
+
+
+                    // ----------------------------------------
+                    // Open New Password Modal
+                    // ----------------------------------------
+
+                    openPasswordResetModal();
+
+
+                    showToast(
+                        result.message,
+                        "success"
+                    );
+
+
+                    console.log(
+                        "Password reset OTP verified."
+                    );
+
+
+                    return;
+                }
+
+
+                // ========================================
+                // NORMAL SIGNUP OTP
+                // ========================================
+
                 closeOtpModal();
 
                 showToast(
-
                     result.message,
-
                     "success"
-
                 );
 
-                otpError.textContent = "";
                 location.reload();
 
                 return;
-
             }
+
             // Failed Verification
 
             verifyOtpBtn.disabled = false;
@@ -1436,6 +2591,11 @@ verifyOtpBtn.addEventListener(
             verifyOtpBtn.textContent = "Verify OTP";
 
             otpError.textContent = result.message;
+
+            showToast(
+                result.message,
+                "error"
+            );
 
 
         }
@@ -1486,6 +2646,492 @@ function closeLoginModal() {
     document.body.style.overflow = "auto";
 
 }
+
+const loginPassword =
+    document.getElementById(
+        "login-password"
+    );
+
+const toggleLoginPassword =
+    document.getElementById(
+        "toggle-login-password"
+    );
+
+
+toggleLoginPassword.addEventListener(
+    "click",
+    function () {
+
+        if (
+            loginPassword.type ===
+            "password"
+        ) {
+
+            loginPassword.type =
+                "text";
+
+            this.innerHTML =
+                '<i class="fa-regular fa-eye-slash"></i>';
+
+            this.setAttribute(
+                "aria-label",
+                "Hide password"
+            );
+
+        } else {
+
+            loginPassword.type =
+                "password";
+
+            this.innerHTML =
+                '<i class="fa-regular fa-eye"></i>';
+
+            this.setAttribute(
+                "aria-label",
+                "Show password"
+            );
+
+        }
+
+    }
+);
+
+const forgotPasswordLink =
+    document.getElementById(
+        "forgot-password"
+    );
+
+const forgotPasswordModal =
+    document.getElementById(
+        "forgot-password-modal"
+    );
+
+
+forgotPasswordLink.addEventListener(
+    "click",
+    function (event) {
+
+        event.preventDefault();
+
+        closeLoginModal();
+
+        // Forgot password modal open
+        forgotPasswordModal.classList.add(
+            "show"
+        );
+
+    }
+);
+
+const backToLogin =
+    document.getElementById(
+        "back-to-login"
+    );
+
+
+backToLogin.addEventListener(
+    "click",
+    function () {
+
+        forgotPasswordModal.classList.remove(
+            "show"
+        );
+
+
+    }
+);
+
+const closeForgotPassword =
+    document.getElementById(
+        "close-forgot-password"
+    );
+
+
+closeForgotPassword.addEventListener(
+    "click",
+    function () {
+
+        forgotPasswordModal.classList.remove(
+            "show"
+        );
+
+    }
+);
+
+function validateResetPassword() {
+
+    const password =
+        resetPasswordInput.value.trim();
+
+    const confirmPassword =
+        resetConfirmPasswordInput.value.trim();
+
+
+    // ----------------------------------------
+    // Clear Errors
+    // ----------------------------------------
+
+    resetPasswordError.textContent = "";
+
+    resetConfirmPasswordError.textContent = "";
+
+
+    // ----------------------------------------
+    // Password Required
+    // ----------------------------------------
+
+    if (password === "") {
+
+        resetPasswordError.textContent =
+            "Please enter a new password.";
+
+        resetPasswordInput.focus();
+
+        return false;
+    }
+
+
+    // ----------------------------------------
+    // Password Length
+    // ----------------------------------------
+
+    if (password.length < 8) {
+
+        resetPasswordError.textContent =
+            "Password must be at least 8 characters.";
+
+        resetPasswordInput.focus();
+
+        return false;
+    }
+
+
+    // ----------------------------------------
+    // Uppercase
+    // ----------------------------------------
+
+    if (!/[A-Z]/.test(password)) {
+
+        resetPasswordError.textContent =
+            "Password must contain an uppercase letter.";
+
+        resetPasswordInput.focus();
+
+        return false;
+    }
+
+
+    // ----------------------------------------
+    // Lowercase
+    // ----------------------------------------
+
+    if (!/[a-z]/.test(password)) {
+
+        resetPasswordError.textContent =
+            "Password must contain a lowercase letter.";
+
+        resetPasswordInput.focus();
+
+        return false;
+    }
+
+
+    // ----------------------------------------
+    // Number
+    // ----------------------------------------
+
+    if (!/[0-9]/.test(password)) {
+
+        resetPasswordError.textContent =
+            "Password must contain a number.";
+
+        resetPasswordInput.focus();
+
+        return false;
+    }
+
+
+    // ----------------------------------------
+    // Special Character
+    // ----------------------------------------
+
+    if (!/[!@#$%^&*(),.?":{}|<>_\-\\[\]\/'`~+=;']/.test(password)) {
+
+        resetPasswordError.textContent =
+            "Password must contain a special character.";
+
+        resetPasswordInput.focus();
+
+        return false;
+    }
+
+
+    // ----------------------------------------
+    // Confirm Password
+    // ----------------------------------------
+
+    if (confirmPassword === "") {
+
+        resetConfirmPasswordError.textContent =
+            "Please confirm your new password.";
+
+        resetConfirmPasswordInput.focus();
+
+        return false;
+    }
+
+
+    // ----------------------------------------
+    // Password Match
+    // ----------------------------------------
+
+    if (password !== confirmPassword) {
+
+        resetConfirmPasswordError.textContent =
+            "Passwords do not match.";
+
+        resetConfirmPasswordInput.focus();
+
+        return false;
+    }
+
+
+    return true;
+}
+
+resetPasswordBtn.addEventListener(
+    "click",
+    async function () {
+
+        // ----------------------------------------
+        // Validate
+        // ----------------------------------------
+
+        if (!validateResetPassword()) {
+            return;
+        }
+
+
+        const newPassword =
+            resetPasswordInput.value;
+
+
+        // ----------------------------------------
+        // Disable Button
+        // ----------------------------------------
+
+        resetPasswordBtn.disabled = true;
+
+        resetPasswordBtn.textContent =
+            "Resetting Password...";
+
+
+        try {
+
+            const response = await fetch(
+                "/reset-password",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        new_password:
+                            newPassword
+
+                    })
+                }
+            );
+
+
+            const result =
+                await response.json();
+
+
+            // ------------------------------------
+            // Failed
+            // ------------------------------------
+
+            if (!result.success) {
+
+                showToast(
+                    result.message,
+                    "error"
+                );
+
+                resetPasswordBtn.disabled =
+                    false;
+
+                resetPasswordBtn.textContent =
+                    "Reset Password";
+
+                return;
+            }
+
+
+            // ------------------------------------
+            // Success
+            // ------------------------------------
+
+            showToast(
+                result.message,
+                "success"
+            );
+
+
+            closePasswordResetModal();
+
+
+            // ------------------------------------
+            // Clear Password Fields
+            // ------------------------------------
+
+            resetPasswordInput.value = "";
+
+            resetConfirmPasswordInput.value = "";
+
+
+            // ------------------------------------
+            // Open Login Modal
+            // ------------------------------------
+
+            openLoginModal();
+
+
+            resetPasswordBtn.disabled =
+                false;
+
+            resetPasswordBtn.textContent =
+                "Reset Password";
+
+
+        }
+        catch (error) {
+
+            console.error(
+                "Password Reset Error:",
+                error
+            );
+
+
+            showToast(
+                "Something went wrong. Please try again.",
+                "error"
+            );
+
+
+            resetPasswordBtn.disabled =
+                false;
+
+            resetPasswordBtn.textContent =
+                "Reset Password";
+        }
+
+    }
+);
+
+resetPasswordInput.addEventListener(
+    "input",
+    function () {
+
+        updateResetPasswordStrength(
+            this.value
+        );
+
+    }
+);
+
+function updateResetPasswordStrength(password) {
+
+    if (password === "") {
+
+        resetPasswordStrengthBar.style.width =
+            "0%";
+
+        resetPasswordStrengthText.textContent =
+            "Strength: -";
+
+        return;
+    }
+
+
+    let score = 0;
+
+
+    if (password.length >= 8) {
+        score++;
+    }
+
+    if (/[A-Z]/.test(password)) {
+        score++;
+    }
+
+    if (/[a-z]/.test(password)) {
+        score++;
+    }
+
+    if (/[0-9]/.test(password)) {
+        score++;
+    }
+
+    if (
+        /[!@#$%^&*(),.?":{}|<>_\-[\]/\\'`~+=;]/.test(password)
+    ) {
+        score++;
+    }
+
+
+    const percentage =
+        (score / 5) * 100;
+
+
+    resetPasswordStrengthBar.style.width =
+        `${percentage}%`;
+
+
+    if (score <= 2) {
+
+        resetPasswordStrengthText.textContent =
+            "Strength: Weak";
+
+    }
+    else if (score <= 4) {
+
+        resetPasswordStrengthText.textContent =
+            "Strength: Medium";
+
+    }
+    else {
+
+        resetPasswordStrengthText.textContent =
+            "Strength: Strong";
+
+    }
+
+}
+resetConfirmPasswordInput.addEventListener(
+    "input",
+    function () {
+
+        resetConfirmPasswordError.textContent =
+            "";
+
+    }
+);
+
+resetPasswordInput.addEventListener(
+    "input",
+    function () {
+
+        resetPasswordError.textContent =
+            "";
+
+    }
+);
 
 
 // =====================================================
@@ -1704,6 +3350,10 @@ async function checkCurrentUser() {
 
             updateUserInterface(currentUser);
 
+            startUserHeartbeat();
+
+            startActiveUsersCheck();
+
             // Hide Login & Signup
 
             loginButton.style.display = "none";
@@ -1738,6 +3388,8 @@ async function checkCurrentUser() {
         }
         else {
 
+            stopUserHeartbeat();
+
             isLoggedIn = false;
 
             currentUser = null;
@@ -1764,6 +3416,85 @@ async function checkCurrentUser() {
         return false;
 
     }
+
+}
+
+// =====================================================
+// Active Users Variables
+// =====================================================
+
+
+
+
+// =====================================================
+// Check Active Users
+// =====================================================
+
+async function checkActiveUsers() {
+
+    try {
+
+        const response =
+            await fetch("/api/active-users");
+
+        if (!response.ok) {
+            return;
+        }
+
+        const result =
+            await response.json();
+
+        if (!result.success) {
+            return;
+        }
+
+        if (!activeUsersDot) {
+            return;
+        }
+
+        if (result.count > 0) {
+
+            activeUsersDot.style.display =
+                "block";
+
+        }
+        else {
+
+            activeUsersDot.style.display =
+                "none";
+
+        }
+
+    }
+    catch (error) {
+
+        console.error(
+            "Active Users Error:",
+            error
+        );
+
+    }
+
+}
+
+
+// =====================================================
+// Start Active Users Check
+// =====================================================
+
+function startActiveUsersCheck() {
+
+    if (activeUsersCheckInterval !== null) {
+        return;
+    }
+
+    checkActiveUsers();
+
+    activeUsersCheckInterval =
+        setInterval(
+            checkActiveUsers,
+            30 * 1000
+        );
 
 }
 
@@ -1831,6 +3562,8 @@ async function loadUserProfile() {
 
         updateProfileLetter.textContent = firstLetter;
 
+        // setTopUserInitial(result.user.full_name);
+
         console.log("PROFILE DATA:", result.user);
 
         if (result.user.profile_image_url) {
@@ -1883,6 +3616,8 @@ function updateUserInterface(user) {
 
     const firstName =
         user.full_name.trim().split(" ")[0];
+
+    setTopUserInitial(firstName);
 
     let displayName =
         firstName.charAt(0).toUpperCase() +
@@ -1946,6 +3681,110 @@ function updateUserInterface(user) {
             "flex";
 
     }
+
+}
+
+// Admin dashboard
+function updateAdminDashboardButton(isAdmin) {
+
+    if (!adminDashboardButton) {
+        return;
+    }
+
+
+    if (isAdmin === true) {
+
+        adminDashboardButton.style.display =
+            "block";
+
+    }
+    else {
+
+        adminDashboardButton.style.display =
+            "none";
+
+    }
+
+}
+
+async function loadAdminStatus() {
+
+    try {
+
+        const response =
+            await fetch(
+                "/session-status",
+                {
+                    method: "GET",
+
+                    headers: {
+                        "Accept":
+                            "application/json"
+                    },
+
+                    credentials:
+                        "same-origin"
+                }
+            );
+
+
+        if (!response.ok) {
+            return;
+        }
+
+
+        const result =
+            await response.json();
+
+
+        if (
+            result.success &&
+            result.authenticated &&
+            result.user
+        ) {
+
+            updateAdminDashboardButton(
+                result.user.is_admin === true
+            );
+
+        }
+        else {
+
+            updateAdminDashboardButton(
+                false
+            );
+
+        }
+
+    }
+    catch (error) {
+
+        console.error(
+            "Admin Status Error:",
+            error
+        );
+
+        updateAdminDashboardButton(
+            false
+        );
+
+    }
+
+}
+
+if (adminDashboardButton) {
+
+    adminDashboardButton.addEventListener(
+        "click",
+        function (event) {
+
+            event.stopPropagation();
+
+            window.location.href =
+                "/admin/";
+
+        }
+    );
 
 }
 
@@ -2013,6 +3852,165 @@ async function saveUserProfile() {
 
 }
 
+
+
+function startUserHeartbeat() {
+
+    // Agar heartbeat already chal raha hai
+    // to dobara interval mat banao.
+
+    if (userHeartbeatInterval !== null) {
+        return;
+    }
+
+    async function sendUserHeartbeat() {
+
+        try {
+
+            const response = await fetch(
+                "/activity/heartbeat",
+                {
+                    method: "POST"
+                }
+            );
+
+            if (!response.ok) {
+
+                console.log(
+                    "Heartbeat failed:",
+                    response.status
+                );
+
+            }
+
+        }
+        catch (error) {
+
+            console.error(
+                "Heartbeat Error:",
+                error
+            );
+
+        }
+
+    }
+
+    // Login/current-user detect hote hi
+    // ek heartbeat immediately bhejo.
+
+    sendUserHeartbeat();
+
+    // Uske baad har 30 seconds me.
+    userHeartbeatInterval = setInterval(
+        sendUserHeartbeat,
+        30 * 1000
+    );
+
+}
+
+
+function stopUserHeartbeat() {
+
+    if (userHeartbeatInterval !== null) {
+
+        clearInterval(
+            userHeartbeatInterval
+        );
+
+        userHeartbeatInterval = null;
+
+    }
+
+}
+
+function markUserInactiveOnExit() {
+
+    if (!isLoggedIn || !currentUser) {
+        return;
+    }
+
+    const data = new Blob(
+        [
+            JSON.stringify({
+                user_id: currentUser.id
+            })
+        ],
+        {
+            type: "application/json"
+        }
+    );
+
+    navigator.sendBeacon(
+        "/activity/heartbeat",
+        data
+    );
+}
+
+function markUserInactiveOnExit() {
+
+    if (!isLoggedIn) {
+        return;
+    }
+
+    navigator.sendBeacon(
+        "/activity/offline"
+    );
+}
+
+window.addEventListener(
+    "pagehide",
+    markUserInactiveOnExit
+);
+
+
+// ========================
+// Heartbeat
+// =======================
+
+function startUserHeartbeat() {
+
+    async function sendHeartbeat() {
+
+        try {
+
+            const response =
+                await fetch("/activity/heartbeat", {
+                    method: "POST"
+                });
+
+            if (!response.ok) {
+
+                console.log(
+                    "Heartbeat failed:",
+                    response.status
+                );
+
+            }
+
+        }
+        catch (error) {
+
+            console.error(
+                "Heartbeat Error:",
+                error
+            );
+
+        }
+
+    }
+
+
+    // Immediately send once
+    sendHeartbeat();
+
+
+    // Then every 30 seconds
+    setInterval(
+        sendHeartbeat,
+        30 * 1000
+    );
+
+}
 
 // ================= profile image click ================
 
@@ -2233,6 +4231,464 @@ async function loadCurrentUser() {
 
 }
 
+// =====================================================
+// Open / Close Popup
+// =====================================================
+
+function openSongSearchPopup() {
+
+    songSearchPopup.classList.add("show");
+
+}
+
+
+function closeSongSearchPopup() {
+
+    songSearchPopup.classList.remove("show");
+
+}
+
+// =====================================================
+// Search View All Songs
+// =====================================================
+
+function searchViewAllSongs(query) {
+
+    if (!Array.isArray(songs)) {
+
+        return [];
+
+    }
+
+    return songs.filter(function (song) {
+
+        return song
+            .toLowerCase()
+            .includes(query);
+
+    });
+
+}
+
+
+// =====================================================
+// Search Your Collections
+// =====================================================
+
+function searchCollectionSongs(query) {
+
+    return new Promise(function (resolve) {
+
+        getAllCollections(function (collections) {
+
+            const collectionSongIds =
+                new Set();
+
+
+            // Get song IDs from collections
+
+            for (const collection of collections) {
+
+                if (!Array.isArray(collection.songs)) {
+
+                    continue;
+
+                }
+
+                for (const songId of collection.songs) {
+
+                    collectionSongIds.add(songId);
+
+                }
+
+            }
+
+
+            // Get actual uploaded songs
+
+            getAllSongsFromDB(function (allSongs) {
+
+                const result =
+                    allSongs.filter(function (song) {
+
+                        return (
+                            collectionSongIds.has(song.id) &&
+                            song.title
+                                .toLowerCase()
+                                .includes(query)
+                        );
+
+                    });
+
+                resolve(result);
+
+            });
+
+        });
+
+    });
+
+}
+
+
+// =====================================================
+// Show Search Results
+// =====================================================
+
+async function showSongSearchResults(query) {
+
+    query =
+        query.trim().toLowerCase();
+
+
+    // Empty search
+
+    if (!query) {
+
+        closeSongSearchPopup();
+
+        songSearchResults.innerHTML = "";
+
+        return;
+
+    }
+
+
+    openSongSearchPopup();
+
+
+    songSearchResults.innerHTML = `
+
+        <div class="song-search-empty">
+
+            Searching...
+
+        </div>
+
+    `;
+
+
+    // -----------------------------------------------
+    // View All
+    // -----------------------------------------------
+
+    const viewAllSongs =
+        searchViewAllSongs(query);
+
+
+    // -----------------------------------------------
+    // Your Collections
+    // -----------------------------------------------
+
+    const collectionSongs =
+        await searchCollectionSongs(query);
+
+
+    // -----------------------------------------------
+    // Results
+    // -----------------------------------------------
+
+    songSearchResults.innerHTML = "";
+
+
+    // View All results
+
+    for (const song of viewAllSongs) {
+
+        createSearchResult(
+            song,
+            "viewall"
+        );
+
+    }
+
+
+    // Collection results
+
+    for (const song of collectionSongs) {
+
+        createSearchResult(
+            song,
+            "collection"
+        );
+
+    }
+
+
+    // No results
+
+    if (
+        viewAllSongs.length === 0 &&
+        collectionSongs.length === 0
+    ) {
+
+        songSearchResults.innerHTML = `
+
+            <div class="song-search-empty">
+
+                No songs found
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+// =====================================================
+// Create Search Result
+// =====================================================
+
+function createSearchResult(
+    song,
+    type
+) {
+
+    const item =
+        document.createElement("div");
+
+
+    item.className =
+        "song-search-item";
+
+
+    const title =
+        type === "viewall"
+            ? song
+            : song.title;
+
+
+    item.innerHTML = `
+
+        <img
+            src="/static/svg/music.svg"
+            alt=""
+            class="invert1"
+        >
+
+        <div class="song-search-name">
+
+            ${title}
+
+        </div>
+
+        <div class="song-search-play">
+
+            <img
+                src="/static/svg/play.svg"
+                alt=""
+                class="invert1"
+            >
+
+        </div>
+
+    `;
+
+
+    // -----------------------------------------------
+    // Click
+    // -----------------------------------------------
+
+    item.addEventListener(
+        "click",
+        async function () {
+
+            // View All song
+
+            if (type === "viewall") {
+
+                await playSelectedSong(song);
+
+            }
+
+
+            // Collection song
+
+            else {
+
+                playCollectionSong(song);
+
+            }
+
+
+            // Close popup
+
+            closeSongSearchPopup();
+
+            songSearchInput.value = "";
+
+        }
+    );
+
+
+    songSearchResults.appendChild(item);
+
+}
+
+
+// =====================================================
+// Search Input
+// =====================================================
+
+songSearchInput.addEventListener(
+    "input",
+    function () {
+
+        showSongSearchResults(
+            songSearchInput.value
+        );
+
+    }
+);
+
+
+// =====================================================
+// Close Button
+// =====================================================
+
+closeSongSearch.addEventListener(
+    "click",
+    function () {
+
+        closeSongSearchPopup();
+
+        songSearchInput.value = "";
+
+    }
+);
+
+
+const testSearchInput =
+    document.getElementById("song-search-input");
+
+const testSearchPopup =
+    document.getElementById("song-search-popup");
+
+
+console.log("SEARCH INPUT:", testSearchInput);
+console.log("SEARCH POPUP:", testSearchPopup);
+
+
+if (testSearchInput && testSearchPopup) {
+
+    testSearchInput.addEventListener(
+        "input",
+        function () {
+
+            console.log(
+                "SEARCH TYPED:",
+                testSearchInput.value
+            );
+
+            if (testSearchInput.value.trim()) {
+
+                testSearchPopup.classList.add("show");
+
+            }
+            else {
+
+                testSearchPopup.classList.remove("show");
+
+            }
+
+        }
+    );
+
+}
+
+
+
+function positionSongSearchPopup() {
+
+    const searchBox =
+        document.querySelector(".search-box");
+
+    const popup =
+        document.getElementById(
+            "song-search-popup"
+        );
+
+    if (!searchBox || !popup) {
+        return;
+    }
+
+    const rect =
+        searchBox.getBoundingClientRect();
+
+    const popupWidth =
+        Math.min(
+            430,
+            window.innerWidth - 20
+        );
+
+    let left =
+        rect.left;
+
+    // Mobile/tablet
+    if (window.innerWidth <= 768) {
+
+        left =
+            (window.innerWidth - popupWidth) / 2;
+
+    }
+
+    // Right edge
+    if (
+        left + popupWidth >
+        window.innerWidth - 10
+    ) {
+
+        left =
+            window.innerWidth -
+            popupWidth -
+            10;
+
+    }
+
+    // Left edge
+    if (left < 10) {
+
+        left = 10;
+
+    }
+
+    popup.style.top =
+        `${rect.bottom + 8}px`;
+
+    popup.style.left =
+        `${left}px`;
+
+    popup.style.width =
+        `${popupWidth}px`;
+}
+
+
+function openSongSearchPopup() {
+
+    positionSongSearchPopup();
+
+    songSearchPopup.classList.add("show");
+
+}
+
+window.addEventListener(
+    "resize",
+    function () {
+
+        if (
+            songSearchPopup.classList.contains(
+                "show"
+            )
+        ) {
+
+            positionSongSearchPopup();
+
+        }
+
+    }
+);
 
 
 // =====================================================
@@ -2299,6 +4755,205 @@ async function canPlaySong(track) {
 
 }
 
+activeUsersButton.addEventListener(
+    "click",
+    function (event) {
+
+        event.stopPropagation();
+
+        if (
+            activeUsersPopup.style.display ===
+            "block"
+        ) {
+
+            activeUsersPopup.style.display =
+                "none";
+
+        }
+        else {
+
+            activeUsersPopup.style.display =
+                "block";
+
+            loadActiveUsers();
+
+        }
+
+    }
+);
+
+
+async function loadActiveUsers() {
+
+    const activeUsersList =
+        document.getElementById(
+            "active-users-list"
+        );
+
+    if (!activeUsersList) {
+        return;
+    }
+
+    activeUsersList.innerHTML =
+        "<p>Loading...</p>";
+
+    try {
+
+        const response =
+            await fetch("/api/active-users");
+
+        const result =
+            await response.json();
+
+        if (!result.success) {
+
+            activeUsersList.innerHTML =
+                "<p>Unable to load users.</p>";
+
+            return;
+        }
+
+        if (result.users.length === 0) {
+
+            activeUsersList.innerHTML =
+                "<p>No active users.</p>";
+
+            return;
+        }
+
+        activeUsersList.innerHTML = "";
+
+        result.users.forEach(function (user) {
+
+            const item =
+                document.createElement("div");
+
+            item.className =
+                "active-user-item";
+
+            let profileElement;
+
+            if (user.profile_image) {
+
+                profileElement =
+                    document.createElement("img");
+
+                profileElement.className =
+                    "active-user-photo";
+
+                profileElement.src =
+                    "/static/uploads/profile_images/" +
+                    user.profile_image;
+
+                profileElement.alt =
+                    user.full_name;
+
+            }
+            else {
+
+                profileElement =
+                    document.createElement("div");
+
+                profileElement.className =
+                    "active-user-letter";
+
+                profileElement.textContent =
+                    user.full_name
+                        .trim()
+                        .charAt(0)
+                        .toUpperCase();
+
+            }
+
+            const info =
+                document.createElement("div");
+
+            info.className =
+                "active-user-info";
+
+            info.innerHTML = `
+
+                <div class="active-user-name">
+                    ${user.full_name}
+                </div>
+
+                <div class="active-user-username">
+                    @${user.username}
+                </div>
+
+            `;
+
+            item.appendChild(profileElement);
+
+            item.appendChild(info);
+
+            activeUsersList.appendChild(item);
+
+        });
+
+    }
+    catch (error) {
+
+        console.error(
+            "Active Users Load Error:",
+            error
+        );
+
+        activeUsersList.innerHTML =
+            "<p>Something went wrong.</p>";
+
+    }
+
+}
+
+document.addEventListener(
+    "click",
+    function (event) {
+
+        if (
+            activeUsersPopup &&
+            activeUsersButton &&
+            !activeUsersPopup.contains(event.target) &&
+            !activeUsersButton.contains(event.target)
+        ) {
+
+            activeUsersPopup.style.display =
+                "none";
+
+        }
+
+    }
+);
+
+// click event on grid
+
+mobileCollectionMenu.addEventListener(
+    "click",
+    function () {
+
+        collectionTabs.classList.toggle(
+            "show-mobile-tabs"
+        );
+
+    }
+);
+
+document.addEventListener("click", function (event) {
+
+    if (
+        !collectionTabs.contains(event.target) &&
+        !mobileCollectionMenu.contains(event.target)
+    ) {
+
+        collectionTabs.classList.remove(
+            "show-mobile-tabs"
+        );
+
+    }
+
+});
+
+
 // =====================================================
 // Play Selected Song
 // =====================================================
@@ -2321,6 +4976,9 @@ const playMusic = (track, pause = false) => {
 
     const folderName = currFolder.split("/")[1];
     currentsong.src = `/song/${folderName}/${track}`;
+
+    currentPlaylistIndex =
+        currentPlaylist.indexOf(track);
     if (!pause) {
 
         currentsong.play().catch((error) => {
@@ -2340,6 +4998,474 @@ const playMusic = (track, pause = false) => {
     songtime.innerHTML = "00:00/00:00";
 
     // play.click()
+}
+
+currentsong.addEventListener("ended", function () {
+
+    console.log("🎵 Song Ended");
+
+    playNextSong();
+
+});
+
+function playNextSong() {
+
+    if (!currentPlaylist.length) {
+
+        console.log("No Playlist Found");
+
+        return;
+
+    }
+
+
+    // Last song
+    if (
+        currentPlaylistIndex >=
+        currentPlaylist.length - 1
+    ) {
+
+        console.log("⏹ Already At Last Song");
+
+        currentsong.pause();
+
+        play.src =
+            "/static/svg/play.svg";
+
+        return;
+
+    }
+
+
+    currentPlaylistIndex++;
+
+
+    // =========================
+    // View All
+    // =========================
+
+    if (currentPlaylistType === "viewall") {
+
+        const nextTrack =
+            currentPlaylist[currentPlaylistIndex];
+
+        console.log(
+            "▶ Next View All Song :",
+            nextTrack
+        );
+
+        playMusic(nextTrack);
+
+        return;
+
+    }
+
+
+    // =========================
+    // Collection
+    // =========================
+
+    if (currentPlaylistType === "collection") {
+
+        const nextSong =
+            currentPlaylist[currentPlaylistIndex];
+
+        console.log(
+            "▶ Next Collection Song :",
+            nextSong.title
+        );
+
+        playCollectionSong(nextSong);
+
+    }
+
+}
+
+function playPreviousSong() {
+
+    if (!currentPlaylist.length) {
+
+        console.log("No Playlist Found");
+
+        return;
+
+    }
+
+
+    // First song
+    if (currentPlaylistIndex <= 0) {
+
+        console.log("⏹ Already At First Song");
+
+        return;
+
+    }
+
+
+    currentPlaylistIndex--;
+
+
+    // =========================
+    // View All
+    // =========================
+
+    if (currentPlaylistType === "viewall") {
+
+        const previousTrack =
+            currentPlaylist[currentPlaylistIndex];
+
+        console.log(
+            "◀ Previous View All Song :",
+            previousTrack
+        );
+
+        playMusic(previousTrack);
+
+        return;
+
+    }
+
+
+    // =========================
+    // Collection
+    // =========================
+
+    if (currentPlaylistType === "collection") {
+
+        const previousSong =
+            currentPlaylist[currentPlaylistIndex];
+
+        console.log(
+            "◀ Previous Collection Song :",
+            previousSong.title
+        );
+
+        playCollectionSong(previousSong);
+
+    }
+
+}
+
+next.addEventListener("click", function () {
+
+    playNextSong();
+
+});
+
+previous.addEventListener("click", function () {
+
+    playPreviousSong();
+
+});
+
+currentsong.addEventListener("play", function () {
+
+    console.log("▶ Current Song Playing");
+
+    updateSidebarPlayIcon();
+
+});
+
+currentsong.addEventListener("pause", function () {
+
+    console.log("⏸ Current Song Paused");
+
+
+    if (currentCollectionSong) {
+
+        updateCollectionSidebarPlayIcon(
+            currentCollectionSong.id,
+
+            false
+        );
+
+    }
+
+});
+
+function setTopUserInitial(userName) {
+
+    const topInitialElement =
+        document.getElementById("top-user-initial");
+
+    if (!topInitialElement || !userName) {
+        return;
+    }
+
+    topInitialElement.textContent =
+        userName.trim().charAt(0).toUpperCase();
+
+}
+
+// ==========================================================
+// Play / Load IndexedDB Collection Song
+// ==========================================================
+
+let collectionSongURL = null;
+let currentCollectionSong = null;
+
+
+function playCollectionSong(song, pause = false) {
+
+    if (!song || !song.file) {
+
+        console.error("Collection song not found.");
+
+        return;
+
+    }
+
+    currentCollectionSong = song;
+
+    currentPlaylistType = "collection";
+
+    currentPlaylistIndex = currentPlaylist.findIndex(
+        function (item) {
+            return item.id === song.id;
+        }
+    );
+
+
+    // Previous Object URL remove
+
+    if (collectionSongURL) {
+
+        URL.revokeObjectURL(collectionSongURL);
+
+    }
+
+
+    // Create URL for IndexedDB File
+
+    collectionSongURL =
+        URL.createObjectURL(song.file);
+
+
+    // Use the SAME Audio object
+
+    currentsong.src = collectionSongURL;
+
+
+    // Update Bottom Player
+
+    songinfo.innerHTML =
+        decodeURI(song.title);
+
+    songtime.innerHTML =
+        "00:00/00:00";
+
+
+    if (!pause) {
+
+        currentsong.play().catch((error) => {
+
+            console.error(
+                "Collection Audio Play Error:",
+                error
+            );
+
+        });
+
+        play.src =
+            "/static/svg/pause.svg";
+
+    }
+    else {
+
+        play.src =
+            "/static/svg/play.svg";
+
+    }
+
+}
+
+function loadSidebarCollectionSongs(songArray) {
+
+    const songUl = document.querySelector(".songList ul");
+
+    if (!songUl) {
+
+        console.error("Sidebar song list not found.");
+
+        return;
+
+    }
+
+    songUl.innerHTML = "";
+
+    songArray.forEach(function (song) {
+
+        songUl.innerHTML += `
+
+            <li data-id="${song.id}">
+
+                <div class="album">
+
+                    <div>
+                        <img
+                            src="/static/svg/music.svg"
+                            alt=""
+                            class="invert1 musicimg"
+                        >
+                    </div>
+
+                    <div class="info">
+
+                        <div>
+                            ${song.title}
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="playnow">
+
+                    <span>Play Now</span>
+
+                    <img
+                        src="/static/svg/play.svg"
+                        alt=""
+                        class="invert1 playimg"
+                    >
+
+                </div>
+
+            </li>
+
+        `;
+
+    });
+
+
+    // Click event
+
+    document.querySelectorAll(".songList li").forEach(function (li) {
+
+        li.addEventListener("click", function () {
+
+            const songId = this.dataset.id;
+
+            const song = songArray.find(
+                function (song) {
+
+                    return song.id === songId;
+
+                }
+            );
+
+            if (song) {
+
+                playCollectionSong(song);
+
+            }
+
+        });
+
+    });
+
+}
+
+function updateSidebarPlayIcon() {
+
+    const sidebarItems =
+        document.querySelectorAll(".songList li");
+
+    sidebarItems.forEach(function (item) {
+
+        const icon =
+            item.querySelector(".playimg");
+
+        if (!icon) {
+            return;
+        }
+
+        // -------------------------
+        // Collection Song
+        // -------------------------
+
+        if (
+            currentCollectionSong &&
+            item.dataset.id === currentCollectionSong.id
+        ) {
+
+            icon.src =
+                currentsong.paused
+                    ? "/static/svg/play.svg"
+                    : "/static/svg/pause.svg";
+
+            return;
+        }
+
+
+        // -------------------------
+        // View All Song
+        // -------------------------
+
+        if (
+            currentPlaylistType === "viewall" &&
+            currentPlaylistIndex >= 0
+        ) {
+
+            const currentTrack =
+                currentPlaylist[currentPlaylistIndex];
+
+            if (
+                item.dataset.track ===
+                encodeURIComponent(currentTrack)
+            ) {
+
+                icon.src =
+                    currentsong.paused
+                        ? "/static/svg/play.svg"
+                        : "/static/svg/pause.svg";
+
+                return;
+            }
+
+        }
+
+
+        // -------------------------
+        // All Other Songs
+        // -------------------------
+
+        icon.src =
+            "/static/svg/play.svg";
+
+    });
+
+}
+
+function updateCollectionSidebarPlayIcon(songId, isPlaying) {
+
+    const sidebarItems =
+        document.querySelectorAll(".songList li");
+
+    sidebarItems.forEach(function (item) {
+
+        const icon =
+            item.querySelector(".playimg");
+
+        if (!icon) {
+            return;
+        }
+
+        if (
+            item.dataset.id === songId &&
+            isPlaying
+        ) {
+
+            icon.src = "/static/svg/pause.svg";
+
+        } else {
+
+            icon.src = "/static/svg/play.svg";
+
+        }
+
+    });
+
 }
 
 // const playlab = (img)=>{
@@ -2415,6 +5541,8 @@ function showToast(message, type = "success") {
     }, TOAST_DURATION);
 
 }
+
+
 async function main() {
 
 
@@ -2427,7 +5555,9 @@ async function main() {
     displayAlbum()
 
 
-
+    // ============================
+    // play button event
+    // ============================
 
     play.addEventListener("click", () => {
         if (currentsong.paused) {
@@ -2443,31 +5573,219 @@ async function main() {
 
     currentsong.addEventListener("timeupdate", () => {
 
-        songtime.innerHTML = `${formatTime(currentsong.currentTime)}/${formatTime(currentsong.duration)}`
-
-        circle.style.left = (currentsong.currentTime / currentsong.duration) * 100 + "%"
-        if (currentsong.currentTime === currentsong.duration) {
-            play.src = "/static/svg/play.svg";
-            circle.style.left = "0%"
+        if (isDraggingSeekbar) {
+            return;
         }
 
+        songtime.innerHTML = `${formatTime(currentsong.currentTime)}/${formatTime(currentsong.duration)}`
+
+        // circle.style.left = (currentsong.currentTime / currentsong.duration) * 100 + "%"
+        // if (currentsong.currentTime === currentsong.duration) {
+        //     play.src = "/static/svg/play.svg";
+        //     circle.style.left = "0%"
+        // }
+
     })
 
 
-    seekbar.addEventListener("click", (e) => {
-        let percent = (e.offsetX / e.target.getBoundingClientRect().width) * 100;
-        circle.style.left = percent + "%"
-        currentsong.currentTime = (currentsong.duration) * percent / 100;
+    // seekbar.addEventListener("click", (e) => {
+    //     let percent = (e.offsetX / e.target.getBoundingClientRect().width) * 100;
+    //     circle.style.left = percent + "%"
+    //     currentsong.currentTime = (currentsong.duration) * percent / 100;
 
-    })
+    // })
 
-    //    Add an event listener for hamburger
+    // =====================================================
+    // Smooth Seekbar Drag
+    // =====================================================
+
+    let isDraggingSeekbar = false;
+
+    // const seekbar =
+    //     document.querySelector(".seekbar");
+
+    // const circle =
+    //     document.querySelector(".circle");
 
 
-    hamburger.addEventListener("click", () => {
+    // -----------------------------------------------------
+    // Calculate position
+    // -----------------------------------------------------
 
-        library.style.left = "0%"
-    })
+    function updateSeekPosition(clientX) {
+
+        const rect =
+            seekbar.getBoundingClientRect();
+
+        let position =
+            clientX - rect.left;
+
+        // Limit position
+        position =
+            Math.max(
+                0,
+                Math.min(position, rect.width)
+            );
+
+        const percentage =
+            (position / rect.width) * 100;
+
+
+        // Move circle immediately
+        circle.style.left =
+            `${percentage}%`;
+
+
+        return percentage;
+    }
+
+
+    // // -----------------------------------------------------
+    // // Start Drag
+    // // -----------------------------------------------------
+
+    // circle.addEventListener(
+    //     "pointerdown",
+    //     function (event) {
+
+    //         event.preventDefault();
+
+    //         isDraggingSeekbar = true;
+
+    //         circle.setPointerCapture(
+    //             event.pointerId
+    //         );
+
+    //     }
+    // );
+
+
+    // // -----------------------------------------------------
+    // // Drag
+    // // -----------------------------------------------------
+
+    // circle.addEventListener(
+    //     "pointermove",
+    //     function (event) {
+
+    //         if (!isDraggingSeekbar) {
+    //             return;
+    //         }
+
+    //         updateSeekPosition(
+    //             event.clientX
+    //         );
+
+    //     }
+    // );
+
+
+    // // -----------------------------------------------------
+    // // End Drag
+    // // -----------------------------------------------------
+
+    // circle.addEventListener(
+    //     "pointerup",
+    //     function (event) {
+
+    //         if (!isDraggingSeekbar) {
+    //             return;
+    //         }
+
+    //         isDraggingSeekbar = false;
+
+    //         const percentage =
+    //             updateSeekPosition(
+    //                 event.clientX
+    //             );
+
+
+    //         // Actual audio position
+    //         if (
+    //             currentsong.duration &&
+    //             !isNaN(currentsong.duration)
+    //         ) {
+
+    //             currentsong.currentTime =
+    //                 (
+    //                     percentage / 100
+    //                 ) *
+    //                 currentsong.duration;
+
+    //         }
+
+    //     }
+    // );
+
+
+    // // -----------------------------------------------------
+    // // Cancel Drag
+    // // -----------------------------------------------------
+
+    // circle.addEventListener(
+    //     "pointercancel",
+    //     function () {
+
+    //         isDraggingSeekbar = false;
+
+    //     }
+    // );
+
+    // //    Add an event listener for hamburger
+
+
+    // hamburger.addEventListener("click", () => {
+
+    //     library.style.left = "0%"
+    // })
+
+
+    const seekbarRange =
+        document.getElementById("seekbar-range");
+
+
+    currentsong.addEventListener(
+        "timeupdate",
+        function () {
+
+            if (
+                !currentsong.duration ||
+                isNaN(currentsong.duration)
+            ) {
+                return;
+            }
+
+            seekbarRange.value =
+                (
+                    currentsong.currentTime /
+                    currentsong.duration
+                ) * 100;
+
+        }
+    );
+
+    seekbarRange.addEventListener(
+        "input",
+        function () {
+
+            if (
+                !currentsong.duration ||
+                isNaN(currentsong.duration)
+            ) {
+                return;
+            }
+
+            const percentage =
+                Number(this.value);
+
+            currentsong.currentTime =
+                (
+                    percentage / 100
+                ) *
+                currentsong.duration;
+
+        }
+    );
 
     // =====================================================
     // Signup Modal
@@ -2657,9 +5975,6 @@ async function main() {
     });
 
 
-
-
-
     // Open Login Modal
 
     loginButton.addEventListener("click", openLoginModal);
@@ -2681,219 +5996,260 @@ async function main() {
     });
 
 
-    signupForm.addEventListener("submit", async function (event) {
+    signupForm.addEventListener(
+        "submit",
+        async function (event) {
 
-        event.preventDefault();
-
-        if (!validateSignupForm()) {
-            return;
-        }
-
-        // ----------------------------------------
-        // Prevent Double Click
-        // ----------------------------------------
-
-        signupSubmitButton.disabled = true;
-
-        signupSubmitButton.textContent =
-            "Creating Account...";
+            event.preventDefault();
 
 
-        const userData = {
-
-            full_name: fullNameInput.value.trim(),
-
-            username: usernameInput.value.trim(),
-
-            email: emailInput.value.trim(),
-
-            password: passwordInput.value
-
-        };
-
-        try {
-
-            const response = await fetch("/signup", {
-
-                method: "POST",
-
-                headers: {
-                    "Content-Type": "application/json"
-                },
-
-                body: JSON.stringify(userData)
-
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-
-                // ----------------------------------------
-                // Success Toast
-                // ----------------------------------------
-
-                showToast(
-                    result.message,
-                    "success"
-                );
-
-                // ----------------------------------------
-                // Close Signup Modal
-                // ----------------------------------------
-
-                closeSignupModal();
-
-                // ----------------------------------------
-                // Open OTP Modal
-                // ----------------------------------------
-
-                openOtpModal(
-                    userData.email
-                );
-                startOtpCountdown(
-                    result.data.remaining_seconds
-                );
+            if (!validateSignupForm()) {
+                return;
+            }
 
 
-            } else {
+            // ----------------------------------------
+            // Prevent Double Click
+            // ----------------------------------------
 
-                signupSubmitButton.disabled = false;
+            signupSubmitButton.disabled = true;
+
+            signupSubmitButton.textContent =
+                "Creating Account...";
+
+
+            const userData = {
+
+                full_name:
+                    fullNameInput.value.trim(),
+
+                username:
+                    usernameInput.value.trim(),
+
+                email:
+                    emailInput.value.trim(),
+
+                password:
+                    passwordInput.value
+
+            };
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/signup",
+                        {
+
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify(userData)
+
+                        }
+                    );
+
+
+                const result =
+                    await response.json();
+
+
+                // =====================================================
+                // Pending Signup Changed
+                // =====================================================
+
+                if (
+                    result.data &&
+                    result.data.pending_signup_changed
+                ) {
+
+                    // Save email
+                    pendingVerificationEmail =
+                        result.data.email;
+
+
+                    // Reset signup button
+                    signupSubmitButton.disabled =
+                        false;
+
+                    signupSubmitButton.textContent =
+                        "Create Free Account";
+
+
+                    // Open custom Beatify modal
+                    openVerificationWarning();
+
+
+                    return;
+
+                }
+
+
+                // =====================================================
+                // Successful Signup
+                // =====================================================
+
+                if (result.success) {
+
+                    showToast(
+                        result.message,
+                        "success"
+                    );
+
+
+                    // Close Signup Modal
+                    closeSignupModal();
+
+                    otpVerificationMode = "signup";
+
+
+                    // Open OTP Modal
+                    openOtpModal(
+                        userData.email
+                    );
+
+
+                    startOtpCountdown(
+                        result.data.remaining_seconds
+                    );
+
+
+                    return;
+
+                }
+
+
+                // =====================================================
+                // Reset Signup Button
+                // =====================================================
+
+                signupSubmitButton.disabled =
+                    false;
 
                 signupSubmitButton.textContent =
                     "Create Free Account";
 
-                // ----------------------------------------
+
+                // =====================================================
                 // Clear Previous Backend Errors
-                // ----------------------------------------
+                // =====================================================
 
                 usernameError.textContent = "";
 
                 emailError.textContent = "";
 
-                // ----------------------------------------
+
+                // =====================================================
                 // Pending Verification
-                // ----------------------------------------
+                // =====================================================
 
-                if (result.data.pending_verification) {
+                if (
+                    result.data &&
+                    result.data.pending_verification
+                ) {
 
+                    showToast(
+                        result.message,
+                        "info"
+                    );
 
-
-                    showToast(result.message, "info");
 
                     closeSignupModal();
 
-                    openOtpModal(result.data.email);
+                    otpVerificationMode = "signup";
 
+                    openOtpModal(
+                        result.data.email
+                    );
 
 
                     startOtpCountdown(
-
                         result.data.remaining_seconds
-
                     );
+
 
                     return;
 
                 }
 
-                // ----------------------------------------
-                // Pending Signup Changed
-                // ----------------------------------------
 
-                if (result.data.pending_signup_changed) {
-
-                    const continueVerification = confirm(
-
-                        result.message +
-
-                        "\n\nPress OK to continue your current verification.\nPress Cancel to start a new signup."
-
-                    );
-
-                    if (continueVerification) {
-
-                        closeSignupModal();
-
-                        openOtpModal(
-
-                            result.data.email
-
-                        );
-
-                        startOtpCountdown(
-
-                            result.data.remaining_seconds
-
-                        );
-
-                    }
-
-                    else {
-
-                        // Next step:
-                        // We'll call /restart-signup here
-
-                    }
-
-                    return;
-
-                }
-
-                // ----------------------------------------
+                // =====================================================
                 // Username Error
-                // ----------------------------------------
+                // =====================================================
 
-                if (result.data.field === "username") {
+                if (
+                    result.data &&
+                    result.data.field === "username"
+                ) {
 
-                    usernameError.textContent = result.message;
+                    usernameError.textContent =
+                        result.message;
+
+                    return;
 
                 }
 
-                // ----------------------------------------
+
+                // =====================================================
                 // Email Error
-                // ----------------------------------------
+                // =====================================================
 
-                else if (result.data.field === "email") {
+                if (
+                    result.data &&
+                    result.data.field === "email"
+                ) {
 
-                    emailError.textContent = result.message;
+                    emailError.textContent =
+                        result.message;
+
+                    return;
 
                 }
 
-                // ----------------------------------------
+
+                // =====================================================
                 // Other Errors
-                // ----------------------------------------
+                // =====================================================
 
-                else {
-
-                    showToast(
-
-                        result.message,
-
-                        "error"
-
-                    );
-
-                }
+                showToast(
+                    result.message,
+                    "error"
+                );
 
             }
 
-        } catch (error) {
 
-            console.error(error);
+            catch (error) {
 
-            showToast(
-                "Something went wrong.",
-                "error"
-            );
-            signupSubmitButton.disabled = false;
+                console.error(
+                    "Signup Error:",
+                    error
+                );
 
-            signupSubmitButton.textContent =
-                "Create Free Account";
+
+                showToast(
+                    "Something went wrong.",
+                    "error"
+                );
+
+
+                signupSubmitButton.disabled =
+                    false;
+
+                signupSubmitButton.textContent =
+                    "Create Free Account";
+
+            }
 
         }
+    );
 
-    });
 
 
     usernameInput.addEventListener("input", function () {
@@ -3030,33 +6386,33 @@ async function main() {
 
     //    Add an event listner for previous song
 
-    previous.addEventListener("click", () => {
-        let index = songs.indexOf(currentsong.src.split("song/").slice(-1)[0])
-        //  playMusic(songs[index-1]);
+    // previous.addEventListener("click", () => {
+    //     let index = songs.indexOf(currentsong.src.split("song/").slice(-1)[0])
+    //     //  playMusic(songs[index-1]);
 
-        if (index > 0) {
-            playSelectedSong(songs[index - 1])
-        } else {
-            playSelectedSong(songs[songs.length - 1])
-        }
+    //     if (index > 0) {
+    //         playSelectedSong(songs[index - 1])
+    //     } else {
+    //         playSelectedSong(songs[songs.length - 1])
+    //     }
 
-    })
+    // })
 
     //    Add an event listner for next song
 
-    next.addEventListener("click", () => {
+    // next.addEventListener("click", () => {
 
-        // let index = songs.indexOf(currentsong.src.split("song/")[1])
-        let index = songs.indexOf(currentsong.src.split("song/").slice(-1)[0])
-        //  playMusic(songs[index+1]);
+    //     // let index = songs.indexOf(currentsong.src.split("song/")[1])
+    //     let index = songs.indexOf(currentsong.src.split("song/").slice(-1)[0])
+    //     //  playMusic(songs[index+1]);
 
-        if (index == songs.length - 1) {
-            playSelectedSong(songs[0])
-        } else {
-            playSelectedSong(songs[index + 1])
-        }
+    //     if (index == songs.length - 1) {
+    //         playSelectedSong(songs[0])
+    //     } else {
+    //         playSelectedSong(songs[index + 1])
+    //     }
 
-    })
+    // })
 
     // Load the playlist whenever card is clicked
     // Array.from(document.getElementsByClassName("card")).forEach((e)=>{
@@ -3071,6 +6427,11 @@ async function main() {
     loadCollections();
     loadCollectionsFromDB();
 
+
 }
 
 main();
+
+loadAdminStatus();
+
+

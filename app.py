@@ -11,7 +11,9 @@ Author: Pallav Kumar
 =========================================================
 """
 from flask import send_from_directory
+from sqlalchemy import inspect, text
 from database.db import init_db, db
+from routes.admin_routes import admin_bp
 from models.user import User
 from models.pending_signup import PendingSignup
 import os
@@ -35,6 +37,7 @@ from config import (
 app = Flask(__name__)
 app.register_blueprint(song_bp)
 app.register_blueprint(auth_bp)
+app.register_blueprint(admin_bp)
 
 # =========================================================
 # Load Configuration
@@ -90,7 +93,57 @@ init_mail(app)
 # =========================================================
 
 with app.app_context():
+
     db.create_all()
+
+
+    # =====================================================
+    # Check User Columns
+    # =====================================================
+
+    inspector = inspect(db.engine)
+
+    user_columns = {
+        column["name"]
+        for column in inspector.get_columns("users")
+    }
+
+
+    print(
+        "Users table columns:",
+        user_columns
+    )
+
+
+    # =====================================================
+    # Add is_admin if missing
+    # =====================================================
+
+    if "is_admin" not in user_columns:
+
+        with db.engine.connect() as connection:
+
+            connection.execute(
+                text(
+                    """
+                    ALTER TABLE users
+                    ADD COLUMN is_admin
+                    BOOLEAN NOT NULL DEFAULT 0
+                    """
+                )
+            )
+
+            connection.commit()
+
+        print(
+            "Added missing 'is_admin' column to users table."
+        )
+
+    else:
+
+        print(
+            "'is_admin' column already exists."
+        )
 
 
 # =========================================================

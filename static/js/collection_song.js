@@ -34,6 +34,8 @@ function addSongToCurrentCollection(songId) {
 
             console.log("✅ Song Added To Collection");
 
+            openCollection(currentCollectionId);
+
         });
 
     });
@@ -73,6 +75,20 @@ function loadCollectionSongs() {
             console.log("Collection Songs :", collectionSongs);
             renderSongList(collectionSongs);
 
+            currentPlaylist = collectionSongs;
+
+            currentPlaylistIndex = 0;
+
+            loadSidebarCollectionSongs(collectionSongs);
+            if (collectionSongs.length > 0) {
+
+                playCollectionSong(
+                    collectionSongs[0],
+                    true
+                );
+
+            }
+
         });
 
     });
@@ -95,7 +111,29 @@ function renderSongList(songArray) {
     if (songArray.length === 0) {
 
         container.innerHTML = `
-            <p>No Songs Found</p>
+
+        <div class="empty-collection">
+
+            <div class="empty-icon">
+
+                🎵
+
+            </div>
+
+            <h2>
+
+                No Songs Yet
+
+            </h2>
+
+            <p>
+
+                Click "Add Songs" to add your first song.
+
+            </p>
+
+        </div>
+
         `;
 
         return;
@@ -124,6 +162,35 @@ function renderSongList(songArray) {
             </div>
 
         `;
+
+    });
+
+    document.querySelectorAll(".collection-song-item").forEach(item => {
+
+        item.addEventListener("click", function (e) {
+
+            // Ignore menu button click
+            if (e.target.classList.contains("collection-song-menu")) {
+
+                return;
+
+            }
+
+            const songId = this.dataset.id;
+
+            getAllSongsFromDB(function (songs) {
+
+                const song = songs.find(s => s.id === songId);
+
+                if (song) {
+
+                    playCollectionSong(song);
+
+                }
+
+            });
+
+        });
 
     });
 

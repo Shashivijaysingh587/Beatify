@@ -18,6 +18,7 @@ from utils.datetime_helper import (
     normalize_datetime
 )
 
+
 from database.db import db
 
 
@@ -77,3 +78,40 @@ class PendingSignup(db.Model):
 
     def __repr__(self):
         return f"<PendingSignup {self.email}>"
+
+class PasswordResetOTP(db.Model):
+    """
+    Stores temporary password reset information
+    before OTP verification.
+    """
+
+    __tablename__ = "password_reset_otps"
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+    email = db.Column(
+        db.String(120),
+        unique=True,
+        nullable=False
+    )
+
+    otp_hash = db.Column(
+        db.String(255),
+        nullable=False
+    )
+
+    otp_expiry = db.Column(
+        db.DateTime,
+        nullable=False
+    )
+
+    created_at = db.Column(
+        db.DateTime,
+        default=utc_now,
+    )
+
+    def __repr__(self):
+        return f"<PasswordResetOTP {self.email}>"

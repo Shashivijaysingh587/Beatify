@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Beatify Admin Dashboard</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+
+    <!-- Admin CSS बाद में अलग file में रखेंगे -->
+
+</head>
+
+<body>
+
+
+    <!-- ==========================================================
+     Beatify Admin Dashboard
+    ========================================================== -->
+
+    <div class="admin-dashboard" id="admin-dashboard">
+
+        <!-- Header -->
+
+        <div class="admin-dashboard-header">
+
+            <div>
+
+                <h1>
+                    Admin Dashboard
+                </h1>
+
+                <p>
+                    Manage Beatify users
+                </p>
+
+            </div>
+
+            <div class="admin-profile">
+
+                <span>
+                    Admin
+                </span>
+
+                <button type="button" id="admin-logout-btn">
+                    Back to Beatify
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- Total Users -->
+
+        <div class="admin-stats">
+
+            <div class="admin-stat-card">
+
+                <div class="admin-stat-icon">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+
+                <div>
+
+                    <span>
+                        Total Users
+                    </span>
+
+                    <h2 id="admin-total-users">
+                        0
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Users -->
+
+        <div class="admin-users-section">
+
+            <div class="admin-section-header">
+
+                <div>
+
+                    <h2>
+                        Users
+                    </h2>
+
+                    <p>
+                        Manage registered Beatify users
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- User List -->
+
+            <div class="admin-users-list" id="admin-users-list">
+
+                <!-- Users will be loaded here -->
+
+                <div class="admin-users-loading">
+
+                    Loading users...
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+</body>
+
+</html>

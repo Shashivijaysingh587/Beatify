@@ -24,7 +24,8 @@ def get_current_user():
     """
     Return the currently logged-in user.
 
-    Automatically clears an invalid session.
+    Automatically clears an invalid session
+    or deactivated user session.
 
     Returns:
         User | None
@@ -36,12 +37,30 @@ def get_current_user():
 
         return None
 
+
     user = get_user_by_id(user_id)
+
+
+    # ----------------------------------------
+    # User Not Found
+    # ----------------------------------------
 
     if user is None:
 
         session.clear()
 
         return None
+
+
+    # ----------------------------------------
+    # Account Deactivated
+    # ----------------------------------------
+
+    if not user.is_active:
+
+        session.clear()
+
+        return None
+
 
     return user

@@ -1,5 +1,5 @@
 """
-==========================================
+=========================================================
 Beatify Music Streaming Platform
 
 File : config.py
@@ -8,12 +8,11 @@ Purpose:
 Stores all project configurations.
 
 Author : Pallav Kumar
-==========================================
+=========================================================
 """
 
 import os
 from dotenv import load_dotenv
-
 
 load_dotenv()
 
@@ -22,7 +21,10 @@ load_dotenv()
 # Base Directory
 # ======================================================
 
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+BASE_DIR = os.path.abspath(
+    os.path.dirname(__file__)
+)
+
 
 # ======================================================
 # Flask Configuration
@@ -33,83 +35,141 @@ SECRET_KEY = os.getenv(
     "CHANGE_ME_LATER"
 )
 
-# =========================================================
-# MySQL Database Configuration
-# =========================================================
 
-MYSQL_HOST = "localhost"
-MYSQL_PORT = 3306
-MYSQL_DATABASE = "beatify_db"
-MYSQL_USERNAME = "beatify_user"
-MYSQL_PASSWORD = "Beatify123"
+# ======================================================
+# MySQL Database Configuration
+# ======================================================
+
+MYSQL_HOST = os.getenv(
+    "MYSQL_HOST",
+    "localhost"
+)
+
+MYSQL_PORT = int(
+    os.getenv(
+        "MYSQL_PORT",
+        "3306"
+    )
+)
+
+MYSQL_DATABASE = os.getenv(
+    "MYSQL_DATABASE",
+    "beatify_db"
+)
+
+MYSQL_USERNAME = os.getenv(
+    "MYSQL_USERNAME",
+    "beatify_user"
+)
+
+MYSQL_PASSWORD = os.getenv(
+    "MYSQL_PASSWORD",
+    "Beatify123"
+)
+
 
 SQLALCHEMY_DATABASE_URI = (
-    f"mysql+pymysql://{MYSQL_USERNAME}:{MYSQL_PASSWORD}"
-    f"@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DATABASE}"
+    f"mysql+pymysql://"
+    f"{MYSQL_USERNAME}:"
+    f"{MYSQL_PASSWORD}"
+    f"@{MYSQL_HOST}:"
+    f"{MYSQL_PORT}/"
+    f"{MYSQL_DATABASE}"
 )
 
 SQLALCHEMY_TRACK_MODIFICATIONS = False
+
 
 # ======================================================
 # Upload Folder
 # ======================================================
 
-UPLOAD_FOLDER = os.path.join(BASE_DIR, "static", "uploads")
+UPLOAD_FOLDER = os.path.join(
+    BASE_DIR,
+    "static",
+    "uploads"
+)
+
 
 # ======================================================
 # Profile Image Upload
 # ======================================================
 
 PROFILE_IMAGE_FOLDER = os.path.join(
-
     UPLOAD_FOLDER,
-
     "profile_images"
-
 )
 
+
 ALLOWED_IMAGE_EXTENSIONS = {
-
     "png",
-
     "jpg",
-
     "jpeg",
-
     "webp"
-
 }
 
-MAX_PROFILE_IMAGE_SIZE = 5 * 1024 * 1024
+
+MAX_PROFILE_IMAGE_SIZE = (
+    5 * 1024 * 1024
+)
+
 
 # ======================================================
-# MySQL Configuration
+# Legacy MySQL Configuration
 # ======================================================
 
 MYSQL_CONFIG = {
-    "host": "localhost",
-    "user": "root",
-    "password": "",
-    "database": "beatify"
+
+    "host": MYSQL_HOST,
+
+    "user": MYSQL_USERNAME,
+
+    "password": MYSQL_PASSWORD,
+
+    "database": MYSQL_DATABASE
+
 }
+
 
 # ======================================================
 # Gmail Configuration
 # ======================================================
 
-MAIL_SERVER = "smtp.gmail.com"
+MAIL_SERVER = os.getenv(
+    "MAIL_SERVER",
+    "smtp.gmail.com"
+)
 
-MAIL_PORT = 587
+MAIL_PORT = int(
+    os.getenv(
+        "MAIL_PORT",
+        "587"
+    )
+)
 
-MAIL_USE_TLS = True
+MAIL_USE_TLS = os.getenv(
+    "MAIL_USE_TLS",
+    "True"
+).lower() == "true"
 
-MAIL_USE_SSL = False
+MAIL_USE_SSL = os.getenv(
+    "MAIL_USE_SSL",
+    "False"
+).lower() == "true"
 
-MAIL_USERNAME = os.getenv("MAIL_USERNAME")
+MAIL_USERNAME = os.getenv(
+    "MAIL_USERNAME"
+)
 
-MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")
+MAIL_PASSWORD = os.getenv(
+    "MAIL_PASSWORD"
+)
 
-MAIL_DEFAULT_SENDER = os.getenv("MAIL_USERNAME")
+MAIL_DEFAULT_SENDER = os.getenv(
+    "MAIL_DEFAULT_SENDER",
+    MAIL_USERNAME
+)
+
 
 # ======================================================
 # OTP

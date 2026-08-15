@@ -21,14 +21,75 @@ function closeCollectionModal() {
 // user card collection
 // ============================
 
-function createCollectionCard(collection) {
+async function createCollectionCard(collection) {
 
-    const songCount = (collection.songs || []).length;
+    const songCount =
+        (collection.songs || []).length;
+
+
+    let coverURL =
+        "/static/img/default_collection.jpeg";
+
+
+    // ----------------------------------------
+    // User Selected Cover
+    // ----------------------------------------
+
+    if (collection.cover) {
+
+        try {
+
+            coverURL =
+                URL.createObjectURL(
+                    collection.cover
+                );
+
+        } catch (error) {
+
+            console.error(
+                "Collection Cover Error:",
+                error
+            );
+
+        }
+
+    }
+
 
     return `
 
         <div class="card collection-card"
              data-id="${collection.id}">
+
+            <button
+                class="collection-menu-btn"
+                data-id="${collection.id}"
+                type="button"
+            >
+                <i class="fa-solid fa-ellipsis-vertical"></i>
+            </button>
+
+            <div class="collection-menu">
+
+                <button
+                    class="rename-collection-btn"
+                    data-id="${collection.id}"
+                    type="button"
+                >
+                    <i class="fa-solid fa-pen"></i>
+                    Rename
+                </button>
+
+                <button
+                    class="delete-collection-btn"
+                    data-id="${collection.id}"
+                    type="button"
+                >
+                    <i class="fa-solid fa-trash"></i>
+                    Delete Collection
+                </button>
+
+            </div>
 
             <div class="play">
 
@@ -44,39 +105,54 @@ function createCollectionCard(collection) {
 
             </div>
 
+
             <div class="card_img">
 
-                <img src="/static/img/default_collection.jpeg">
+                <img
+                    src="${coverURL}"
+                    alt="${collection.name}"
+                >
 
             </div>
 
-            <h2>${collection.name}</h2>
 
-            <p>${songCount} Songs</p>
+            <h2>
+                ${collection.name}
+            </h2>
+
+
+            <p>
+                ${songCount} Songs
+            </p>
 
         </div>
 
     `;
-
 }
 
-function loadCollectionsFromDB() {
+async function loadCollectionsFromDB() {
+
     console.log("Loading from IndexedDB...");
 
-    getAllCollections(function (collections) {
+    getAllCollections(async function (collections) {
 
         const container =
-            document.getElementById("collections-container");
+            document.getElementById(
+                "collections-container"
+            );
 
         container.innerHTML = "";
 
         let html = "";
 
-        collections.forEach(collection => {
+        for (const collection of collections) {
 
-            html += createCollectionCard(collection);
+            html +=
+                await createCollectionCard(
+                    collection
+                );
 
-        });
+        }
 
         container.innerHTML = html;
 
@@ -108,6 +184,40 @@ function openCollection(id) {
 
         collectionSongCount.textContent =
             `${(collection.songs || []).length} Songs`;
+
+        const collectionCoverImage =
+            document.getElementById(
+                "collection-cover-image"
+            );
+
+
+        if (collection.cover) {
+
+            try {
+
+                collectionCoverImage.src =
+                    URL.createObjectURL(
+                        collection.cover
+                    );
+
+            } catch (error) {
+
+                console.error(
+                    "Collection Cover Error:",
+                    error
+                );
+
+                collectionCoverImage.src =
+                    "/static/img/default_collection.jpeg";
+
+            }
+
+        } else {
+
+            collectionCoverImage.src =
+                "/static/img/default_collection.jpeg";
+
+        }
 
         loadCollectionSongs();
 

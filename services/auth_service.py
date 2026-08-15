@@ -15,8 +15,13 @@ from utils.datetime_helper import (
     utc_now,
     normalize_datetime
 )
+
+from services.email_service import send_welcome_email,  send_password_reset_otp
 from models.user import User
-from models.pending_signup import PendingSignup
+from models.pending_signup import (
+    PendingSignup,
+    PasswordResetOTP
+)
 from database.db import db
 from utils.password import hash_password
 from utils.otp import (
@@ -167,7 +172,197 @@ def create_pending_signup(
         db.session.rollback()
 
         raise
+def save_password_reset_otp(
+    email,
+    otp_hash,
+    otp_expiry
+):
+    """
+    Create or update password reset OTP.
+    """
 
+    try:
+
+        reset_otp = PasswordResetOTP.query.filter_by(
+            email=email
+        ).first()
+
+        if reset_otp is None:
+
+            reset_otp = PasswordResetOTP(
+
+                email=email,
+
+                otp_hash=otp_hash,
+
+                otp_expiry=otp_expiry
+
+            )
+
+            db.session.add(reset_otp)
+
+        else:
+
+            reset_otp.otp_hash = otp_hash
+
+            reset_otp.otp_expiry = otp_expiry
+
+
+        db.session.commit()
+
+        return reset_otp
+
+    except Exception:
+
+        db.session.rollback()
+
+        raise
+
+def get_password_reset_otp(email):
+    """
+    Get password reset OTP record by email.
+    """
+
+    return PasswordResetOTP.query.filter_by(
+        email=email.strip().lower()
+    ).first()
+
+def resend_password_reset_otp(email):
+    """
+    Generate and resend a new password reset OTP.
+    """
+
+    email = email.strip().lower()
+
+
+    # ----------------------------------------
+    # Find User
+    # ----------------------------------------
+
+    user = User.query.filter_by(
+        email=email
+    ).first()
+
+
+    if user is None:
+
+        return {
+            "success": False,
+            "message":
+                "No account found with this email address."
+        }
+
+
+    # ----------------------------------------
+    # Generate New OTP
+    # ----------------------------------------
+
+    otp = generate_otp()
+
+
+    # ----------------------------------------
+    # Hash OTP
+    # ----------------------------------------
+
+    otp_hash = hash_otp(
+        otp
+    )
+
+
+    # ----------------------------------------
+    # New Expiry
+    # ----------------------------------------
+
+    otp_expiry = (
+        utc_now()
+        + timedelta(minutes=5)
+    )
+
+
+    # ----------------------------------------
+    # Save New OTP
+    # ----------------------------------------
+
+    try:
+
+        save_password_reset_otp(
+
+            email=email,
+
+            otp_hash=otp_hash,
+
+            otp_expiry=otp_expiry
+
+        )
+
+    except Exception as error:
+
+        print(
+            "Password Reset OTP Save Error:",
+            error
+        )
+
+        return {
+            "success": False,
+            "message":
+                "Unable to generate a new OTP. Please try again."
+        }
+
+
+    # ----------------------------------------
+    # Send Email
+    # ----------------------------------------
+
+    email_sent = send_password_reset_otp(
+
+        email=user.email,
+
+        full_name=user.full_name,
+
+        otp=otp
+
+    )
+
+
+    if not email_sent:
+
+        return {
+            "success": False,
+            "message":
+                "Unable to send the new OTP. Please try again."
+        }
+
+
+    # ----------------------------------------
+    # Success
+    # ----------------------------------------
+
+    return {
+        "success": True,
+
+        "message":
+            "A new verification code has been sent to your email.",
+
+        "data": {
+
+            "email": email,
+
+            "remaining_seconds": 300
+
+        }
+    }
+
+# def verify_password_reset_otp(
+#     email,
+#     otp
+# ):
+#     """
+#     Verify password reset OTP.
+#     """
+
+#     reset_otp = get_password_reset_otp(
+#         email
+#     )
 # ==========================================================
 # Get Pending Signup By Email
 # ==========================================================
@@ -1031,6 +1226,24 @@ def verify_signup_otp(email, otp):
         print("Email :", user.email)
         print("=" * 60)
 
+        # ----------------------------------------
+        # Send Welcome Email
+        # ----------------------------------------
+
+        try:
+
+            send_welcome_email(
+                user.email,
+                user.full_name
+            )
+
+        except Exception as e:
+
+            print(
+                "Welcome Email Error:",
+                e
+            )
+
         saved_user = User.query.filter_by(
 
             email=user.email
@@ -1178,27 +1391,72 @@ def create_user(full_name, username, email, password):
 
 from utils.password import verify_password
 
-
 def login_user(identifier, password):
     """
     Login using username or email.
     """
 
-    # Find user by username or email
+    # ----------------------------------------
+    # Find User
+    # ----------------------------------------
+
     user = User.query.filter(
         (User.username == identifier) |
         (User.email == identifier)
     ).first()
 
-    # User not found
+
+    # ----------------------------------------
+    # User Not Found
+    # ----------------------------------------
+
     if not user:
-        return False, "Invalid username/email or password.",None
 
-    # Verify password
-    if not verify_password(password, user.password_hash):
-        return False, "Invalid username/email or password.",None
+        return (
+            False,
+            "Invalid username/email or password.",
+            None
+        )
 
-    return True, "Login successful.",user
+
+    # ----------------------------------------
+    # Check Password
+    # ----------------------------------------
+
+    if not verify_password(
+        password,
+        user.password_hash
+    ):
+
+        return (
+            False,
+            "Invalid username/email or password.",
+            None
+        )
+
+
+    # ----------------------------------------
+    # Check Account Status
+    # ----------------------------------------
+
+    if not user.is_active:
+
+        return (
+            False,
+            "Your account has been deactivated by the administrator.",
+            None
+        )
+
+
+    # ----------------------------------------
+    # Login Successful
+    # ----------------------------------------
+
+    return (
+        True,
+        "Login successful.",
+        user
+    )
 
 # ==========================================================
 # Get User By ID
@@ -1307,4 +1565,185 @@ def verify_email_otp(email, otp):
     return (
         True,
         "Account verified successfully."
+    )
+
+def verify_password_reset_otp(
+    email,
+    otp
+    ):
+    """
+    Verify password reset OTP.
+    """
+
+    reset_otp = get_password_reset_otp(
+        email
+    )
+
+
+    # ----------------------------------------
+    # OTP Record Not Found
+    # ----------------------------------------
+
+    if reset_otp is None:
+
+        return error_response(
+            "Your password reset session has expired. Please request a new OTP."
+        )
+
+
+    # ----------------------------------------
+    # OTP Expired
+    # ----------------------------------------
+
+    expiry_time = normalize_datetime(
+        reset_otp.otp_expiry
+    )
+
+
+    if utc_now() > expiry_time:
+
+        try:
+
+            db.session.delete(
+                reset_otp
+            )
+
+            db.session.commit()
+
+        except Exception:
+
+            db.session.rollback()
+
+        return error_response(
+            "Your verification code has expired. Please request a new OTP."
+        )
+
+
+    # ----------------------------------------
+    # Validate OTP Format
+    # ----------------------------------------
+
+    if not otp.isdigit() or len(otp) != 6:
+
+        return error_response(
+            "Please enter a valid 6-digit verification code."
+        )
+
+
+    # ----------------------------------------
+    # Verify OTP Hash
+    # ----------------------------------------
+
+    if not verify_otp(
+        otp,
+        reset_otp.otp_hash
+    ):
+
+        return error_response(
+            "The verification code you entered is incorrect. Please try again."
+        )
+
+
+    # ----------------------------------------
+    # Success
+    # ----------------------------------------
+
+    return success_response(
+        "OTP verified successfully."
+    )
+
+
+def reset_password(
+    email,
+    new_password
+):
+    """
+    Reset the user's password after
+    successful OTP verification.
+    """
+
+    email = email.strip().lower()
+
+
+    # ----------------------------------------
+    # Find User
+    # ----------------------------------------
+
+    user = User.query.filter_by(
+        email=email
+    ).first()
+
+
+    if user is None:
+
+        return (
+            False,
+            "User account not found."
+        )
+
+
+    # ----------------------------------------
+    # Validate Password
+    # ----------------------------------------
+
+    if not new_password:
+
+        return (
+            False,
+            "New password is required."
+        )
+
+
+    # ----------------------------------------
+    # Hash New Password
+    # ----------------------------------------
+
+    user.password_hash = hash_password(
+        new_password
+    )
+
+
+    # ----------------------------------------
+    # Remove Used Reset OTP
+    # ----------------------------------------
+
+    reset_otp = get_password_reset_otp(
+        email
+    )
+
+
+    try:
+
+        if reset_otp is not None:
+
+            db.session.delete(
+                reset_otp
+            )
+
+
+        db.session.commit()
+
+
+    except Exception as error:
+
+        db.session.rollback()
+
+        print(
+            "Password Reset Error:",
+            error
+        )
+
+        return (
+            False,
+            "Unable to reset password. Please try again."
+        )
+
+
+    # ----------------------------------------
+    # Success
+    # ----------------------------------------
+
+    return (
+        True,
+        "Password reset successfully."
     )

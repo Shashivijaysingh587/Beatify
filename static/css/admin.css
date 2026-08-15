@@ -1,0 +1,83 @@
+/* =========================================================
+   Default Admin Avatar
+========================================================= */
+
+.admin-default-avatar {
+    width: 58px;
+    height: 58px;
+
+    min-width: 58px;
+
+    border-radius: 50%;
+
+    background: linear-gradient(
+        145deg,
+        #3a3a3a,
+        #202020
+    );
+
+    border: 2px solid #333;
+
+    position: relative;
+
+    overflow: hidden;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+}
+
+
+/* =========================================================
+   Avatar Head
+========================================================= */
+
+.admin-avatar-head {
+
+    width: 19px;
+    height: 19px;
+
+    border-radius: 50%;
+
+    background: #bdbdbd;
+
+    position: absolute;
+
+    top: 10px;
+
+}
+
+
+/* =========================================================
+   Avatar Body
+========================================================= */
+
+.admin-avatar-body {
+
+    width: 38px;
+    height: 25px;
+
+    border-radius: 22px 22px 0 0;
+
+    background: #bdbdbd;
+
+    position: absolute;
+
+    bottom: 0;
+
+}
+
+.admin-user-avatar {
+    width: 58px;
+    height: 58px;
+
+    min-width: 58px;
+
+    border-radius: 50%;
+
+    object-fit: cover;
+
+    display: block;
+}

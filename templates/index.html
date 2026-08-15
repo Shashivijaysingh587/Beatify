@@ -29,33 +29,72 @@
                     <button>
                         <img src="{{ url_for('static', filename='svg/search.svg') }}" alt="" class="invert">
                     </button>
-                    <input type="text" placeholder="what do you want to play?">
+
+                    <input type="text" placeholder="what do you want to play?" id="song-search-input">
+
                     <span class="browse">
                         <img src="{{ url_for('static', filename='svg/browse.svg') }}" alt="" class="invert"
                             title="Browse ">
                     </span>
                 </div>
+
+                <div id="song-search-popup" class="song-search-popup">
+
+                    <div class="song-search-popup-header">
+
+                        <span>Search Results</span>
+
+                        <button id="close-song-search" type="button">
+                            ×
+                        </button>
+
+                    </div>
+
+
+                    <div id="song-search-results" class="song-search-results">
+
+                    </div>
+
+                </div>
             </div>
 
+
+
             <div class="profile">
-                <span title="Upgrade to premium">Explore premium</span>
+                <span title="Upgrade to premium">Explore premium</span disabled>
                 <a href="">
                     <img src="{{ url_for('static', filename='svg/download.svg') }}" alt="" class="invert">
                     <span>Install App</span>
-                </a>
+                </a disabled>
                 <div class="notification">
                     <button>
                         <img src="{{ url_for('static', filename='svg/notification.svg') }}" alt="" class="invert"
                             title="What's new">
                     </button>
-                    <button>
+                    <button id="active-users-button">
                         <img src="{{ url_for('static', filename='svg/user-group.svg') }}" alt="" class="invert"
                             title="Listening activity">
+
+                        <span id="active-users-dot" class="active-users-dot">
+                        </span>
                     </button>
                 </div>
+
+                <div id="active-users-popup" class="active-users-popup">
+
+                    <div class="active-users-header">
+                        <h3>Active Users</h3>
+                    </div>
+
+                    <div id="active-users-list" class="active-users-list">
+                    </div>
+
+                </div>
+
+
                 <div class="profile-pic">
                     <button>
-                        <span>P</span>
+                        <span id="top-user-initial">P</span>
                     </button>
                 </div>
             </div>
@@ -145,15 +184,15 @@
                 <div class="sidebar-dropdown" id="sidebar-dropdown">
 
                     <button id="update-profile-btn">
-
                         Update Profile
+                    </button>
 
+                    <button id="admin-dashboard-btn" style="display: none;">
+                        Admin Dashboard
                     </button>
 
                     <button id="logout-btn">
-
                         Logout
-
                     </button>
 
                 </div>
@@ -207,8 +246,6 @@
                         </div>
 
                         <div class="collection-right">
-
-
 
                         </div>
 
@@ -454,6 +491,59 @@
 
                 </div>
 
+                <!-- =====================================================
+                    Verification Already In Progress Modal
+                         ===================================================== -->
+
+                <div id="verification-warning-modal" class="verification-warning-modal">
+
+                    <div class="verification-warning-content">
+
+                        <button type="button" id="verification-warning-close" class="verification-warning-close">
+                            ×
+                        </button>
+
+
+                        <div class="verification-warning-icon">
+                            ⚠
+                        </div>
+
+
+                        <h2>
+                            Verification Already in Progress
+                        </h2>
+
+
+                        <p>
+                            You already have a verification code pending
+                            for this email.
+                        </p>
+
+
+                        <p class="verification-warning-note">
+                            Continue your current verification, or start
+                            a new signup. Starting a new signup will
+                            invalidate your previous verification code.
+                        </p>
+
+
+                        <div class="verification-warning-actions">
+
+                            <button type="button" id="continue-verification-btn" class="continue-verification-btn">
+                                Continue Verification
+                            </button>
+
+
+                            <button type="button" id="new-signup-btn" class="new-signup-btn">
+                                Start New Signup
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
 
                 <!-- ===================================================== -->
                 <!-- OTP Verification Modal -->
@@ -574,6 +664,114 @@
 
                 </div>
 
+                <!-- ==========================================================
+                    Password Reset Modal
+                ========================================================== -->
+
+                <div class="password-reset-modal" id="password-reset-modal">
+
+                    <div class="password-reset-overlay">
+
+                        <div class="password-reset-modal-content">
+
+                            <!-- Close Button -->
+
+                            <button type="button" class="password-reset-close-btn" id="password-reset-close-btn">
+                                &times;
+                            </button>
+
+
+                            <!-- Title -->
+
+                            <h1 class="password-reset-title">
+                                Create New Password
+                            </h1>
+
+
+                            <p class="password-reset-subtitle">
+                                Create a new password for your Beatify account.
+                            </p>
+
+
+                            <!-- New Password -->
+
+                            <div class="password-reset-form-group">
+
+                                <label for="reset-password">
+                                    New Password
+                                </label>
+
+                                <div class="password-reset-password-wrapper">
+
+                                    <input type="password" id="reset-password" class="password-reset-input"
+                                        placeholder="Enter new password" autocomplete="new-password">
+
+                                    <button type="button" id="toggle-reset-password" class="password-reset-eye"
+                                        aria-label="Show password">
+
+                                        <i class="fa-regular fa-eye"></i>
+
+                                    </button>
+
+                                </div>
+
+                                <small class="password-reset-error" id="reset-password-error"></small>
+
+                            </div>
+
+
+                            <!-- Confirm Password -->
+
+                            <div class="password-reset-form-group">
+
+                                <label for="reset-confirm-password">
+                                    Confirm Password
+                                </label>
+
+                                <div class="password-reset-password-wrapper">
+
+                                    <input type="password" id="reset-confirm-password" class="password-reset-input"
+                                        placeholder="Confirm new password" autocomplete="new-password">
+
+                                    <button type="button" id="toggle-reset-confirm-password" class="password-reset-eye"
+                                        aria-label="Show password">
+
+                                        <i class="fa-regular fa-eye"></i>
+
+                                    </button>
+
+                                </div>
+
+                                <small class="password-reset-error" id="reset-confirm-password-error"></small>
+
+                            </div>
+
+
+                            <!-- Password Strength -->
+
+                            <div class="password-reset-strength">
+
+                                <div class="password-reset-strength-bar" id="reset-password-strength-bar"></div>
+
+                            </div>
+
+                            <small class="password-reset-strength-text" id="reset-password-strength-text">
+                                Strength: -
+                            </small>
+
+
+                            <!-- Reset Button -->
+
+                            <button type="button" class="password-reset-btn" id="reset-password-btn">
+                                Reset Password
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
 
                 <!-- ===================================================== -->
                 <!-- Login Modal -->
@@ -642,11 +840,19 @@
                                         Password
                                     </label>
 
-                                    <input type="password" id="login-password" class="login-input"
-                                        placeholder="Enter your password">
+                                    <div class="login-password-wrapper">
 
-                                    <small class="login-error" id="login-password-error">
-                                    </small>
+                                        <input type="password" id="login-password" class="login-input"
+                                            placeholder="Enter your password">
+
+                                        <button type="button" id="toggle-login-password" class="login-password-eye"
+                                            aria-label="Show password">
+                                            <i class="fa-regular fa-eye"></i>
+                                        </button>
+
+                                    </div>
+
+                                    <small class="login-error" id="login-password-error"></small>
 
                                 </div>
 
@@ -704,6 +910,72 @@
 
                 </div>
 
+                <!-- ============================= -->
+                <!-- Forgot password    -->
+                <!-- ============================== -->
+
+                <div id="forgot-password-modal" class="forgot-password-modal">
+
+                    <div class="forgot-password-modal-content">
+
+                        <!-- Header -->
+
+                        <div class="forgot-password-header">
+
+                            <h2>Forgot Password?</h2>
+
+                            <button type="button" id="close-forgot-password">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+
+                        </div>
+
+
+                        <!-- Body -->
+
+                        <div class="forgot-password-body">
+
+                            <p class="forgot-password-description">
+                                Enter your registered email address
+                                and we'll send you a verification code.
+                            </p>
+
+
+                            <div class="forgot-password-form-group">
+
+                                <label for="forgot-password-email">
+                                    Email Address
+                                </label>
+
+                                <input type="email" id="forgot-password-email" class="forgot-password-input"
+                                    placeholder="Enter your email" autocomplete="email">
+
+                                <small class="forgot-password-error" id="forgot-password-email-error"></small>
+
+                            </div>
+
+
+                            <button type="button" id="send-forgot-password-otp" class="forgot-password-submit">
+                                Send OTP
+                            </button>
+
+
+                            <p class="forgot-password-back">
+
+                                Remember your password?
+
+                                <button type="button" id="back-to-login">
+                                    Back to Login
+                                </button>
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
                 <!-- ==========================================
                      Update Profile Modal
                 ========================================== -->
@@ -739,7 +1011,7 @@
 
                                 <div class="update-profile-avatar" id="update-profile-avatar">
 
-                                    <img id="update-profile-photo" src="" alt="Profile Photo">
+                                    <img id="update-profile-photo">
 
                                     <span id="update-profile-letter">
 
@@ -937,9 +1209,7 @@
                 </div>
 
                 <div class="playbar">
-                    <div class="seekbar">
-                        <div class="circle"></div>
-                    </div>
+
                     <div class="operator">
                         <div class="songinfo"></div>
                         <div class="playsection">
@@ -952,6 +1222,10 @@
                         </div>
                         <div class="songtime"></div>
                     </div>
+
+                    <div class="seekbar">
+                        <input type="range" id="seekbar-range" min="0" max="100" value="0" step="0.1">
+                    </div>>
                 </div>
 
 
@@ -1047,16 +1321,47 @@
         </div>
 
     </div>
+
+    <div id="delete-collection-modal" class="delete-collection-modal">
+
+        <div class="delete-collection-content">
+
+            <div class="delete-collection-icon">
+                <i class="fa-solid fa-trash"></i>
+            </div>
+
+            <h2>Delete Collection?</h2>
+
+            <p id="delete-collection-message">
+                Are you sure you want to delete this collection?
+            </p>
+
+            <div class="delete-collection-actions">
+
+                <button type="button" id="cancel-delete-collection">
+                    Cancel
+                </button>
+
+                <button type="button" id="confirm-delete-collection">
+                    Delete
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
     <input type="file" id="songUploader" accept="audio/*" multiple hidden>
 
-    
+
     <script src="{{ url_for('static', filename='js/indexeddb.js') }}"></script>
     <script src="{{ url_for('static', filename='js/collection.js') }}"></script>
     <script src="{{ url_for('static', filename='js/song_db.js') }}"></script>
     <script src="{{ url_for('static', filename='js/collection_song.js') }}"></script>
+
     <script src="{{ url_for('static', filename='js/script2.js') }}"></script>
 
-    
+
 
 </body>
 

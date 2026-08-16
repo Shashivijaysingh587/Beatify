@@ -27,7 +27,8 @@ from flask import Flask, render_template
 from config import (
     SECRET_KEY,
     SQLALCHEMY_DATABASE_URI,
-    SQLALCHEMY_TRACK_MODIFICATIONS
+    SQLALCHEMY_TRACK_MODIFICATIONS,
+    SQLALCHEMY_ENGINE_OPTIONS,
 )
 
 # =========================================================
@@ -52,6 +53,7 @@ app.config["SECRET_KEY"] = SECRET_KEY
 
 
 app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = SQLALCHEMY_ENGINE_OPTIONS
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = SQLALCHEMY_TRACK_MODIFICATIONS
 
 
@@ -176,7 +178,7 @@ def serve_song_files(folder, filename):
 
 if __name__ == "__main__":
     app.run(
-        debug=True,
-        host="127.0.0.1",
-        port=5000
+        host="0.0.0.0",
+        port=5000,
+        debug=True
     )

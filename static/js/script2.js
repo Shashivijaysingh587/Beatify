@@ -639,10 +639,7 @@ function showViewAll() {
 
     collectionsSection.style.display = "none";
 
-    createCollectionBtn.style.display = "none";
-
     viewAllButton.classList.add("active");
-
     yourCollectionsButton.classList.remove("active");
 
 }
@@ -654,54 +651,64 @@ function showYourCollections() {
     collectionsSection.style.display = "block";
 
     collectionsHeader.style.display = "flex";
-
     createCollectionBtn.style.display = "block";
 
     viewAllButton.classList.remove("active");
-
     yourCollectionsButton.classList.add("active");
 
 }
 
 viewAllButton.addEventListener(
-
     "click",
-
     showViewAll
-
 );
-
-viewAllButton.addEventListener(
-    "click",
-    function () {
-
-        collectionTabs.classList.remove(
-            "show-mobile-tabs"
-        );
-
-    }
-);
-
 
 yourCollectionsButton.addEventListener(
-
     "click",
-
     showYourCollections
-
-
 );
 
-yourCollectionsButton.addEventListener(
-    "click",
-    function () {
+showViewAll();
 
-        collectionTabs.classList.remove(
-            "show-mobile-tabs"
-        );
+// viewAllButton.addEventListener(
 
-    }
-);
+//     "click",
+
+//     showViewAll
+
+// );
+
+// viewAllButton.addEventListener(
+//     "click",
+//     function () {
+
+//         collectionTabs.classList.remove(
+//             "show-mobile-tabs"
+//         );
+
+//     }
+// );
+
+
+// yourCollectionsButton.addEventListener(
+
+//     "click",
+
+//     showYourCollections
+
+
+// );
+
+// yourCollectionsButton.addEventListener(
+//     "click",
+//     function () {
+
+//         collectionTabs.classList.remove(
+//             "show-mobile-tabs"
+//         );
+
+//     }
+// );
 
 addSongBtn.addEventListener(
 
@@ -5181,12 +5188,14 @@ currentsong.addEventListener("pause", function () {
 
     console.log("⏸ Current Song Paused");
 
+    // Normal sidebar song icon → Play
+    updateSidebarPlayIcon();
 
+    // Collection sidebar song icon → Play
     if (currentCollectionSong) {
 
         updateCollectionSidebarPlayIcon(
             currentCollectionSong.id,
-
             false
         );
 
@@ -5742,13 +5751,13 @@ async function main() {
     //     }
     // );
 
-    // //    Add an event listener for hamburger
+    //    Add an event listener for hamburger
 
 
-    // hamburger.addEventListener("click", () => {
+    hamburger.addEventListener("click", () => {
 
-    //     library.style.left = "0%"
-    // })
+        library.style.left = "0%"
+    })
 
 
     const seekbarRange =

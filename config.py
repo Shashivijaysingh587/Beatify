@@ -36,6 +36,8 @@ SECRET_KEY = os.getenv(
 )
 
 
+
+
 # ======================================================
 # MySQL Database Configuration
 # ======================================================
@@ -64,18 +66,47 @@ MYSQL_USERNAME = os.getenv(
 
 MYSQL_PASSWORD = os.getenv(
     "MYSQL_PASSWORD",
-    "Beatify123"
+     "Beatify123"
 )
 
+# ======================================================
+# Aiven CA Certificate
+# ======================================================
+
+CA_CERT_PATH = os.path.join(
+    BASE_DIR,
+    "ca.pem"
+)
+
+# ======================================================
+# SQLAlchemy Database URI
+# ======================================================
+
+from urllib.parse import quote_plus
 
 SQLALCHEMY_DATABASE_URI = (
     f"mysql+pymysql://"
-    f"{MYSQL_USERNAME}:"
-    f"{MYSQL_PASSWORD}"
+    f"{quote_plus(MYSQL_USERNAME)}:"
+    f"{quote_plus(MYSQL_PASSWORD)}"
     f"@{MYSQL_HOST}:"
     f"{MYSQL_PORT}/"
     f"{MYSQL_DATABASE}"
 )
+
+# ======================================================
+# SQLAlchemy SSL Configuration
+# ======================================================
+
+if MYSQL_HOST not in ("localhost", "127.0.0.1"):
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "connect_args": {
+            "ssl": {
+                "ca": CA_CERT_PATH
+            }
+        }
+    }
+else:
+    SQLALCHEMY_ENGINE_OPTIONS = {}
 
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 

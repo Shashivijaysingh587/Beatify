@@ -64,8 +64,8 @@ header {
 }
 
 .search-box>button {
-    height: 50px;
-    width: 50px;
+    height: 40px;
+    width: 40px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -99,13 +99,14 @@ header {
     padding: 6px 8px;
     border-radius: 30px;
     background-color: #1f1f1f;
+    height: 41px;
 
 }
 
 
 
 .search input {
-    height: 5vh;
+    height: 4vh;
     width: 30vw;
     background-color: #1f1f1f;
     border: none;
@@ -1626,8 +1627,8 @@ main {
 
 
 .spotifyPlaylist p {
-    color: rgb(203, 197, 197);
     font-size: 14px;
+    color: rgb(176, 170, 170);
 }
 
 .spotifyPlaylist * {
@@ -1643,7 +1644,7 @@ main {
     max-height: 69.9vh;
     overflow-y: auto;
     overflow-x: hidden;
-    padding-bottom: 110px;
+    padding-bottom: 80px;
 }
 
 .card_img {
@@ -1693,7 +1694,8 @@ main {
 p {
     padding: 9px 0px;
     font-size: 18px;
-    color:white
+
+    color: white;
 }
 
 .card .play {
@@ -2058,15 +2060,20 @@ p {
 }
 
 .playbar {
+    position: fixed;
+    bottom: 10px;
+    right: 5px;
+
     width: 74%;
     height: 60px;
+
     background-color: #1e1e1e;
     padding-bottom: 22px;
-    border-radius: 0px 0px 10px 10px;
-    position: absolute;
-    bottom: 4px;
-    right: 12px;
 
+    border-radius: 10px 10px 0 0;
+    margin-bottom: 0.5vh;
+
+    z-index: 1000;
 }
 
 .playsection {
@@ -6481,6 +6488,25 @@ input::-ms-clear {
 
 }
 
+@media (max-width: 768px) {
+    .playbar {
+        position: fixed;
+        left: 8px;
+        right: 8px;
+        bottom: 15px;
+
+        width: calc(100% - 16px);
+        height: 55px;
+
+        padding-bottom: 13px;
+        margin-bottom: 0.5vh;
+
+        border-radius: 8px 8px 0 0;
+
+        z-index: 1000;
+    }
+}
+
 
 /* =========================================================
    Login / Signup - Responsive
@@ -7446,17 +7472,7 @@ Responsive : 768px   mobile
     }
 
 }
-@media (min-width: 481px) and (max-width: 1055px) {
-    .playbar {
-        width: calc(100% - 20px);
-        height: 58px;
-        right: 10px;
-        
-        padding-bottom: 10px;
-        position: relative;
-        bottom: 1.3vh;
-    }
-}
+
 
 /* =====================================================
    MOBILE - BOTTOM PLAYER
@@ -7468,16 +7484,9 @@ Responsive : 768px   mobile
         width: calc(100% - 16px);
         height: 52px;
         right: 8px;
-        
-        padding-bottom: 20px;
-        position: relative;
-        bottom: 10vh;
-
-    }
-
-    .search{
-        width: 27vw;
-        height: 4vh;
+        bottom: 8px;
+        padding-bottom: 8px;
+        margin-bottom: 0.5vh;
     }
 
 

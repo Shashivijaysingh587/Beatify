@@ -1,94 +1,301 @@
-"""
-=========================================================
-Beatify Music Streaming Platform
-
-File: routes/song_routes.py
-
-Purpose:
-Reads all albums from the song folder.
-
-Author: Pallav Kumar
-=========================================================
-"""
+# """
+# Beatify Music Streaming Platform
+#
+# File: routes/song_routes.py
+#
+# Purpose:
+# Reads all albums and songs.
+#
+# Author: Pallav Kumar
+# """
 
 import os
 import json
 
+import boto3
+
+from dotenv import load_dotenv
+
 from flask import Blueprint, jsonify
 
+
+# =========================================================
+# Load Environment Variables
+# =========================================================
+
+load_dotenv(override=True)
+
+
+# =========================================================
 # Blueprint
-song_bp = Blueprint("song", __name__)
+# =========================================================
 
+song_bp = Blueprint(
+    "song",
+    __name__
+)
+
+
+# =========================================================
 # Root Project Folder
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# =========================================================
 
-# Song Folder
-SONG_FOLDER = os.path.join(BASE_DIR, "song")
+BASE_DIR = os.path.dirname(
+    os.path.dirname(
+        os.path.abspath(__file__)
+    )
+)
 
+
+# =========================================================
+# Local Song Folder
+#
+# अभी info.json पढ़ने के लिए रखा गया है.
+# =========================================================
+
+SONG_FOLDER = os.path.join(
+    BASE_DIR,
+    "song"
+)
+
+
+# =========================================================
+# R2 Configuration
+# =========================================================
+
+R2_ENDPOINT_URL = os.getenv(
+    "R2_ENDPOINT_URL"
+)
+
+R2_ACCESS_KEY_ID = os.getenv(
+    "R2_ACCESS_KEY_ID"
+)
+
+R2_SECRET_ACCESS_KEY = os.getenv(
+    "R2_SECRET_ACCESS_KEY"
+)
+
+R2_BUCKET_NAME = os.getenv(
+    "R2_BUCKET_NAME"
+)
+
+R2_REGION = os.getenv(
+    "R2_REGION",
+    "auto"
+)
+
+R2_PUBLIC_URL = os.getenv(
+    "R2_PUBLIC_URL",
+    "https://pub-612f37d74f7f435cb2385d11b9e0d0e0.r2.dev"
+).rstrip("/")
+
+
+# =========================================================
+# R2 Client
+# =========================================================
+
+s3 = boto3.client(
+
+    "s3",
+
+    endpoint_url=R2_ENDPOINT_URL,
+
+    aws_access_key_id=R2_ACCESS_KEY_ID,
+
+    aws_secret_access_key=R2_SECRET_ACCESS_KEY,
+
+    region_name=R2_REGION
+)
+
+
+# =========================================================
+# Get All Albums
+# =========================================================
 
 def get_all_albums():
     """
-    Read all album folders from the song directory.
-
-    Returns:
-        list
+    Read all albums from Cloudflare R2.
     """
 
     albums = []
 
-    if not os.path.exists(SONG_FOLDER):
-        return albums
+    try:
 
-    for folder in os.listdir(SONG_FOLDER):
+        response = s3.list_objects_v2(
+            Bucket=R2_BUCKET_NAME
+        )
 
-        folder_path = os.path.join(SONG_FOLDER, folder)
+        folders = set()
 
-        if not os.path.isdir(folder_path):
-            continue
+        for obj in response.get("Contents", []):
 
-        info_path = os.path.join(folder_path, "info.json")
+            key = obj.get("Key", "")
 
-        if not os.path.exists(info_path):
-            continue
+            if "/" not in key:
+                continue
 
-        with open(info_path, "r", encoding="utf-8") as file:
-            info = json.load(file)
+            folder = key.split("/", 1)[0]
 
-        albums.append({
-            "folder": folder,
-            "title": info.get("title", folder),
-            "description": info.get("description", ""),
-            "cover": f"song/{folder}/cover.jpg"
-        })
+            folders.add(folder)
+
+
+        for folder in sorted(folders):
+
+            info_url = (
+                f"{R2_PUBLIC_URL}/"
+                f"{folder}/info.json"
+            )
+
+            cover_url = (
+                f"{R2_PUBLIC_URL}/"
+                f"{folder}/cover.jpg"
+            )
+
+            try:
+
+                import requests
+
+                response = requests.get(
+                    info_url,
+                    timeout=10
+                )
+
+                response.raise_for_status()
+
+                info = response.json()
+
+            except Exception as error:
+
+                print(
+                    f"Could not read info.json "
+                    f"for {folder}: {error}"
+                )
+
+                continue
+
+
+            albums.append({
+
+                "folder": folder,
+
+                "title": info.get(
+                    "title",
+                    folder
+                ),
+
+                "description": info.get(
+                    "description",
+                    ""
+                ),
+
+                "cover": cover_url
+
+            })
+
+
+    except Exception as error:
+
+        print(
+            f"R2 album listing error: {error}"
+        )
+
+        return []
+
 
     return albums
-    from flask import jsonify
+
+
+# =========================================================
+# Get Album Songs From R2
+# =========================================================
 
 def get_album_songs(folder_name):
     """
-    Return all mp3 songs from a selected album.
+    Return all MP3 songs from a selected album
+    stored in Cloudflare R2.
     """
 
-    folder_path = os.path.join(SONG_FOLDER, folder_name)
+    prefix = (
+        f"{folder_name}/"
+    )
 
-    if not os.path.exists(folder_path):
-        return []
 
     songs = []
 
-    for file in os.listdir(folder_path):
 
-        if file.lower().endswith(".mp3"):
-            songs.append(file)
+    try:
+
+        response = s3.list_objects_v2(
+
+            Bucket=R2_BUCKET_NAME,
+
+            Prefix=prefix
+
+        )
+
+
+        for obj in response.get(
+            "Contents",
+            []
+        ):
+
+            object_key = obj.get(
+                "Key",
+                ""
+            )
+
+
+            if not object_key.lower().endswith(
+                ".mp3"
+            ):
+                continue
+
+
+            # Remove folder prefix
+            filename = object_key[
+                len(prefix):
+            ]
+
+
+            # Ignore nested folders
+            if "/" in filename:
+                continue
+
+
+            songs.append(
+                filename
+            )
+
+
+    except Exception as error:
+
+        print(
+            f"R2 song listing error: {error}"
+        )
+
+        return []
+
 
     songs.sort()
 
     return songs
 
 
-@song_bp.route("/api/songs/<folder_name>")
-def api_album_songs(folder_name):
+# =========================================================
+# API - Album Songs
+# =========================================================
 
-    songs = get_album_songs(folder_name)
+@song_bp.route(
+    "/api/songs/<folder_name>"
+)
+def api_album_songs(
+    folder_name
+):
 
-    return jsonify(songs)
+    songs = get_album_songs(
+        folder_name
+    )
+
+    return jsonify(
+        songs
+    )

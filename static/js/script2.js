@@ -3,6 +3,9 @@ const currentsong = new Audio()
 let songs;
 let currFolder;
 
+const R2_PUBLIC_URL =
+    "https://pub-612f37d74f7f435cb2385d11b9e0d0e0.r2.dev";
+
 // ==========================================================
 // OTP Countdown
 // ==========================================================
@@ -4971,19 +4974,28 @@ async function playSelectedSong(track) {
 }
 
 const playMusic = (track, pause = false) => {
-    // let audio = new Audio("song/"+track)
-
 
     const folderName = currFolder.split("/")[1];
-    currentsong.src = `/song/${folderName}/${track}`;
+
+    // Cloudflare R2 song URL
+    const songUrl =
+        `${R2_PUBLIC_URL}/${encodeURIComponent(folderName)}/${encodeURIComponent(track)}`;
+
+    console.log("Playing from R2:", songUrl);
+
+    currentsong.src = songUrl;
 
     currentPlaylistIndex =
         currentPlaylist.indexOf(track);
+
     if (!pause) {
 
         currentsong.play().catch((error) => {
 
-            console.error("Audio Play Error:", error);
+            console.error(
+                "Audio Play Error:",
+                error
+            );
 
         });
 
@@ -4992,13 +5004,12 @@ const playMusic = (track, pause = false) => {
     } else {
 
         play.src = "/static/svg/play.svg";
-
     }
-    songinfo.innerHTML = decodeURI(track);
-    songtime.innerHTML = "00:00/00:00";
 
-    // play.click()
-}
+    songinfo.innerHTML = decodeURI(track);
+
+    songtime.innerHTML = "00:00/00:00";
+};
 
 currentsong.addEventListener("ended", function () {
 

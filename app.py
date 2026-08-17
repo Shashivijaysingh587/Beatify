@@ -53,6 +53,10 @@ app.config["SECRET_KEY"] = SECRET_KEY
 
 
 app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    "pool_pre_ping": True,
+    "pool_recycle": 1800
+}
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = SQLALCHEMY_ENGINE_OPTIONS
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = SQLALCHEMY_TRACK_MODIFICATIONS
 
@@ -86,7 +90,7 @@ app.config["MAIL_DEFAULT_SENDER"] = MAIL_DEFAULT_SENDER
 # Initialize Database
 init_db(app)
 
-print(app.config["SQLALCHEMY_DATABASE_URI"])
+
 
 # Initialize Mail
 init_mail(app)

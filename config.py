@@ -99,6 +99,8 @@ SQLALCHEMY_DATABASE_URI = (
 
 if MYSQL_HOST not in ("localhost", "127.0.0.1"):
     SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_pre_ping": True,
+        "pool_recycle": 1800,
         "connect_args": {
             "ssl": {
                 "ca": CA_CERT_PATH
@@ -106,7 +108,11 @@ if MYSQL_HOST not in ("localhost", "127.0.0.1"):
         }
     }
 else:
-    SQLALCHEMY_ENGINE_OPTIONS = {}
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_pre_ping": True,
+        "pool_recycle": 1800
+    }
+
 
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 

@@ -809,7 +809,20 @@ function saveCollectionLocal(collection) {
 // create function for user collection
 // ================================
 
-function createNewCollection() {
+async function createNewCollection() {
+
+    // ========================================
+    // Login Required
+    // ========================================
+
+    if (!isLoggedIn) {
+
+        closeCollectionModal();
+
+        openSignupModal();
+
+        return;
+    }
 
     const name =
         collectionName.value.trim();

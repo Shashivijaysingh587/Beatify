@@ -82,6 +82,15 @@ initDatabase();
 
 function saveCollection(collection, callback) {
 
+        if (!isLoggedIn) {
+
+        console.warn(
+            "Guest user cannot create collections."
+        );
+
+        return;
+    }
+
     if (!db) {
 
         console.error("Database not ready.");

@@ -141,11 +141,6 @@ def get_all_albums():
 
         for folder in sorted(folders):
 
-            info_url = (
-                f"{R2_PUBLIC_URL}/"
-                f"{folder}/info.json"
-            )
-
             cover_url = (
                 f"{R2_PUBLIC_URL}/"
                 f"{folder}/cover.jpg"
@@ -153,16 +148,17 @@ def get_all_albums():
 
             try:
 
-                import requests
-
-                response = requests.get(
-                    info_url,
-                    timeout=10
+                # Read info.json directly from R2
+                info_response = s3.get_object(
+                    Bucket=R2_BUCKET_NAME,
+                    Key=f"{folder}/info.json"
                 )
 
-                response.raise_for_status()
+                info_data = info_response["Body"].read()
 
-                info = response.json()
+                info = json.loads(
+                    info_data.decode("utf-8")
+                )
 
             except Exception as error:
 

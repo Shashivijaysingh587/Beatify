@@ -642,6 +642,9 @@ function showViewAll() {
     viewAllButton.classList.add("active");
     yourCollectionsButton.classList.remove("active");
 
+    // Mobile collection menu hide
+    collectionTabs.classList.remove("show-mobile-tabs");
+
 }
 
 function showYourCollections() {
@@ -655,6 +658,9 @@ function showYourCollections() {
 
     viewAllButton.classList.remove("active");
     yourCollectionsButton.classList.add("active");
+
+    // Mobile collection menu hide
+    collectionTabs.classList.remove("show-mobile-tabs");
 
 }
 
@@ -5018,15 +5024,15 @@ const playMusic = (track, pause = false) => {
     songtime.innerHTML = "00:00/00:00";
 };
 
-currentsong.addEventListener("ended", function () {
+currentsong.addEventListener("ended", async function () {
 
     console.log("🎵 Song Ended");
 
-    playNextSong();
+    await playNextSong();
 
 });
 
-function playNextSong() {
+async function playNextSong() {
 
     if (!currentPlaylist.length) {
 
@@ -5062,21 +5068,21 @@ function playNextSong() {
     // View All
     // =========================
 
-    if (currentPlaylistType === "viewall") {
+    const nextTrack =
+        currentPlaylist[currentPlaylistIndex];
 
-        const nextTrack =
-            currentPlaylist[currentPlaylistIndex];
+    console.log(
+        "▶ Next View All Song :",
+        nextTrack
+    );
 
-        console.log(
-            "▶ Next View All Song :",
-            nextTrack
-        );
-
-        playMusic(nextTrack);
-
+    if (!(await canPlaySong(nextTrack))) {
         return;
-
     }
+
+    playMusic(nextTrack);
+
+    return;
 
 
     // =========================
@@ -5099,16 +5105,14 @@ function playNextSong() {
 
 }
 
-function playPreviousSong() {
+async function playPreviousSong() {
 
     if (!currentPlaylist.length) {
 
         console.log("No Playlist Found");
 
         return;
-
     }
-
 
     // First song
     if (currentPlaylistIndex <= 0) {
@@ -5116,12 +5120,10 @@ function playPreviousSong() {
         console.log("⏹ Already At First Song");
 
         return;
-
     }
 
-
-    currentPlaylistIndex--;
-
+    const previousIndex =
+        currentPlaylistIndex - 1;
 
     // =========================
     // View All
@@ -5130,19 +5132,24 @@ function playPreviousSong() {
     if (currentPlaylistType === "viewall") {
 
         const previousTrack =
-            currentPlaylist[currentPlaylistIndex];
+            currentPlaylist[previousIndex];
 
         console.log(
             "◀ Previous View All Song :",
             previousTrack
         );
 
+        if (!(await canPlaySong(previousTrack))) {
+            return;
+        }
+
+        currentPlaylistIndex =
+            previousIndex;
+
         playMusic(previousTrack);
 
         return;
-
     }
-
 
     // =========================
     // Collection
@@ -5151,17 +5158,18 @@ function playPreviousSong() {
     if (currentPlaylistType === "collection") {
 
         const previousSong =
-            currentPlaylist[currentPlaylistIndex];
+            currentPlaylist[previousIndex];
 
         console.log(
             "◀ Previous Collection Song :",
             previousSong.title
         );
 
+        currentPlaylistIndex =
+            previousIndex;
+
         playCollectionSong(previousSong);
-
     }
-
 }
 
 next.addEventListener("click", function () {

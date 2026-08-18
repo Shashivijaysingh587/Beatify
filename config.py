@@ -208,6 +208,24 @@ MAIL_DEFAULT_SENDER = os.getenv(
 )
 
 
+
+# =========================================================
+# Brevo Email API
+# =========================================================
+
+BREVO_API_KEY = os.getenv(
+    "BREVO_API_KEY"
+)
+
+BREVO_API_URL = "https://api.brevo.com/v3/smtp/email"
+
+BREVO_SENDER_NAME = "Beatify"
+
+BREVO_SENDER_EMAIL = os.getenv(
+    "BREVO_SENDER_EMAIL",
+    "beatify.music.app@gmail.com"
+)
+
 # ======================================================
 # OTP
 # ======================================================
